@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import * as XLSX from "xlsx";
 import dynamic from "next/dynamic";
+import { API_URL } from "../lib/config";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -49,12 +50,11 @@ const Marker = dynamic(() =>
 /* ==============================================
    2) DATOS DE PRUEBA
    ============================================== */
-const kpiData = [
-  { label: "Ítems Totales", value: 1145 },
-  { label: "Stock Total (unid.)", value: 23543 },
-  { label: "Órdenes Mensuales", value: 2134 },
-  { label: "Pendientes de Envío", value: 78 },
-];
+
+interface KPI {
+  label: string;
+  value: number;
+}
 
 const inboundOutboundData = [
   { mes: "Ene", inbound: 1200, outbound: 800 },
@@ -154,6 +154,8 @@ export default function DashboardsPage() {
   // Estado para zoom y centro
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [mapZoom, setMapZoom] = useState(1);
+  const [kpiData, setKpiData] = useState<KPI[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   // Al hacer clic en la lista lateral
   const handleListClick = (wh: WarehouseMarker) => {
@@ -166,6 +168,35 @@ export default function DashboardsPage() {
     setMapCenter(wh.coordinates);
     setMapZoom(4);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/dashboard/kpis`);
+        const data = await res.json();
+        setKpiData([
+          { label: 'Ítems Totales', value: data.items || 0 },
+          { label: 'Stock Total (unid.)', value: data.stock || 0 },
+          { label: 'Órdenes Mensuales', value: data.orders || 0 },
+          { label: 'Incidentes', value: data.incidents || 0 },
+        ]);
+      } catch (err) {
+        console.error('Error fetching KPIs', err);
+      }
+
+      try {
+        const resN = await fetch(`${API_URL}/dashboard/notifications`);
+        const notifData = await resN.json();
+        if (Array.isArray(notifData)) {
+          setNotifications(notifData);
+        }
+      } catch (err) {
+        console.error('Error fetching notifications', err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Exportar data a Excel
   const exportChartDataToExcel = (dataArray: any[], sheetName: string) => {
@@ -194,6 +225,14 @@ export default function DashboardsPage() {
           </KPICard>
         ))}
       </KPISection>
+
+      {notifications.length > 0 && (
+        <ul>
+          {notifications.map((n, idx) => (
+            <li key={idx}>{n.message}</li>
+          ))}
+        </ul>
+      )}
 
       {/* GRID PRINCIPAL */}
       <DashboardGrid>
