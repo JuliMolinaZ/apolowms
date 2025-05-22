@@ -1,5 +1,5 @@
 // src/screens/RegisterScreen.tsx
-import React, { useState, useContext } from "react";
+import React, { useState, useContext } from 'react';
 import {
   StyleSheet,
   Dimensions,
@@ -7,63 +7,57 @@ import {
   Alert,
   ImageBackground,
   Image,
-} from "react-native";
-import {
-  Card,
-  Input,
-  Button,
-  Text,
-  Icon,
-  Layout,
-} from "@ui-kitten/components";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../navigation/types";
-import { AuthContext } from "../contexts/AuthContext";
+} from 'react-native';
+import { Card, Input, Button, Text, Icon, Layout } from '@ui-kitten/components';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/types';
+import { AuthContext } from '../contexts/AuthContext';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 // Icon placeholders (if quieres íconos junto a los inputs)
 const PersonIcon = (props: any) => <Icon {...props} name="person-outline" />;
-const EmailIcon  = (props: any) => <Icon {...props} name="email-outline" />;
-const LockIcon   = (props: any) => <Icon {...props} name="lock-outline" />;
+const EmailIcon = (props: any) => <Icon {...props} name="email-outline" />;
+const LockIcon = (props: any) => <Icon {...props} name="lock-outline" />;
 
-type RegisterNavProp = NavigationProp<RootStackParamList, "Register">;
+type RegisterNavProp = NavigationProp<RootStackParamList, 'Register'>;
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function RegisterScreen() {
   const navigation = useNavigation<RegisterNavProp>();
-  const { /* opcional: puedes auto-login tras registrarte */ } = useContext(AuthContext);
+  const {
+    /* opcional: puedes auto-login tras registrarte */
+  } = useContext(AuthContext);
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail]       = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     setError(null);
     if (!username || !email || !password) {
-      setError("All fields are required");
+      setError('All fields are required');
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch(
-        "http://192.168.1.12:3000/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password }),
-        }
-      );
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password }),
+      });
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Registration failed");
+        throw new Error(err.message || 'Registration failed');
       }
 
-      Alert.alert("Success", "You can now log in");
-      navigation.navigate("Login");
+      Alert.alert('Success', 'You can now log in');
+      navigation.navigate('Login');
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -74,7 +68,7 @@ export default function RegisterScreen() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require("../../assets/burbujas.png")}
+        source={require('../../assets/burbujas.png')}
         style={styles.bg}
         resizeMode="cover"
       >
@@ -83,7 +77,7 @@ export default function RegisterScreen() {
         <View style={styles.center}>
           {/* Logo arriba */}
           <Image
-            source={require("../../assets/Apoloware.svg")}
+            source={require('../../assets/Apoloware.svg')}
             style={styles.logo}
           />
 
@@ -129,13 +123,13 @@ export default function RegisterScreen() {
               onPress={handleRegister}
               disabled={loading}
             >
-              {loading ? "Signing Up..." : "Sign Up"}
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </Button>
 
             <Button
               appearance="ghost"
               style={styles.link}
-              onPress={() => navigation.navigate("Login")}
+              onPress={() => navigation.navigate('Login')}
             >
               Back to Login
             </Button>
@@ -151,24 +145,24 @@ const styles = StyleSheet.create({
   bg: {
     width,
     height,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.6)",
+    backgroundColor: 'rgba(255,255,255,0.6)',
   },
   center: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 16,
   },
   logo: {
     width: 120,
     height: 120,
     marginBottom: 24,
-    resizeMode: "contain",
+    resizeMode: 'contain',
   },
   card: {
     width: width * 0.9,
@@ -178,7 +172,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   title: {
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 24,
   },
   input: {
@@ -191,7 +185,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   error: {
-    textAlign: "center",
+    textAlign: 'center',
     marginTop: 8,
   },
 });

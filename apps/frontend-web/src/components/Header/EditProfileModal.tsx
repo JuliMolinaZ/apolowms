@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import React, { useRef, useState } from "react";
-import styled from "styled-components";
-import EditIcon from "@mui/icons-material/Edit";
+import React, { useRef, useState } from 'react';
+import styled from 'styled-components';
+import EditIcon from '@mui/icons-material/Edit';
+import { API_URL } from '../../lib/config';
 
 /* Ajusta la interfaz 'User' a tu modelo real */
 interface User {
@@ -19,42 +20,45 @@ interface EditProfileModalProps {
   onClose: () => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose }) => {
+const EditProfileModal: React.FC<EditProfileModalProps> = ({
+  user,
+  onClose,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState(user.username);
   const [email, setEmail] = useState(user.email);
-  const [phone, setPhone] = useState(user.phone || "");
+  const [phone, setPhone] = useState(user.phone || '');
   const [role, setRole] = useState(user.role);
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState('');
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append("username", username);
-    formData.append("email", email);
-    formData.append("phone", phone);
-    formData.append("role", role);
-    if (password) formData.append("password", password);
-    if (profileImage) formData.append("profileImage", profileImage);
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('phone', phone);
+    formData.append('role', role);
+    if (password) formData.append('password', password);
+    if (profileImage) formData.append('profileImage', profileImage);
 
     try {
-      const res = await fetch(`http://localhost:3000/users/${user.id}`, {
-        method: "PATCH",
+      const res = await fetch(`${API_URL}/users/${user.id}`, {
+        method: 'PATCH',
         body: formData,
       });
       const data = await res.json();
       if (res.ok) {
         // Actualiza localStorage si el backend devuelve el user
-        localStorage.setItem("user", JSON.stringify(data));
+        localStorage.setItem('user', JSON.stringify(data));
         onClose();
         window.location.reload();
       } else {
-        console.error("Error actualizando perfil:", res.status, data);
+        console.error('Error actualizando perfil:', res.status, data);
       }
     } catch (error) {
-      console.error("Error en la petición:", error);
+      console.error('Error en la petición:', error);
     }
   };
 
@@ -76,13 +80,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose }) =>
             <ProfileLogo
               src={
                 user.profileImage
-                  ? `http://localhost:3000/uploads/${user.profileImage}`
-                  : "/logos/default-avatar.png"
+                  ? `${API_URL}/uploads/${user.profileImage}`
+                  : '/logos/default-avatar.png'
               }
               alt={user.username}
             />
             <EditIconContainer>
-              <EditIcon style={{ fontSize: "1.2rem", color: "#fff" }} />
+              <EditIcon style={{ fontSize: '1.2rem', color: '#fff' }} />
             </EditIconContainer>
             <HiddenFileInput
               ref={fileInputRef}
@@ -160,7 +164,7 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5); 
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,13 +172,13 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: #fff;          /* Fondo blanco para simular tarjeta */
+  background: #fff; /* Fondo blanco para simular tarjeta */
   padding: 2rem;
   border-radius: 1rem;
   width: 400px;
   max-width: 90%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  color: #000;              /* Texto en negro */
+  color: #000; /* Texto en negro */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -231,7 +235,7 @@ const Form = styled.form`
 
 const InputGroup = styled.div`
   margin-bottom: 1rem;
-  
+
   label {
     display: block;
     font-weight: 500;
@@ -266,7 +270,7 @@ const SubmitButton = styled.button`
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 0.5rem;
-  background-color: #2e67f8; 
+  background-color: #2e67f8;
   color: #fff;
   font-weight: bold;
   cursor: pointer;

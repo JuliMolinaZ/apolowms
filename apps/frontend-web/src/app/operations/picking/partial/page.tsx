@@ -1,15 +1,16 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import styled, { createGlobalStyle } from "styled-components";
+'use client';
+import React, { useEffect, useState } from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
+import { API_URL } from '../../../../lib/config';
 
 // ===== Colores de ejemplo =====
-const backgroundColor = "#EAF5FA";   // Fondo general
-const cardBgColor = "#FFFFFF";       // Fondo de tarjetas y tabla
-const menuBgColor = "#FFFFFF";       // Fondo del submenú
-const hoverBgColor = "#f4f9fc";      // Hover en submenú y tabla
-const borderColor = "#d3e0e9";       // Bordes suaves
-const textColor = "#333";            // Color de texto principal
-const accentColor = "#5ce1e6";       // Botones y acentos
+const backgroundColor = '#EAF5FA'; // Fondo general
+const cardBgColor = '#FFFFFF'; // Fondo de tarjetas y tabla
+const menuBgColor = '#FFFFFF'; // Fondo del submenú
+const hoverBgColor = '#f4f9fc'; // Hover en submenú y tabla
+const borderColor = '#d3e0e9'; // Bordes suaves
+const textColor = '#333'; // Color de texto principal
+const accentColor = '#5ce1e6'; // Botones y acentos
 
 // ===== Estilos globales =====
 const GlobalStyle = createGlobalStyle`
@@ -49,8 +50,9 @@ const ModuleNavItem = styled.div<{ $active?: boolean }>`
   padding: 0.5rem 0.75rem;
   cursor: pointer;
   border-radius: 6px;
-  font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
-  background-color: ${({ $active }) => ($active ? hoverBgColor : "transparent")};
+  font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
+  background-color: ${({ $active }) =>
+    $active ? hoverBgColor : 'transparent'};
 
   &:hover {
     background-color: ${hoverBgColor};
@@ -164,37 +166,37 @@ interface Picking {
 export default function PickingPage() {
   // ============= Lógica para las tarjetas (demo) ============
   const pendingOrders = 54;
-  const pendingTime = "152 minutes per order";
+  const pendingTime = '152 minutes per order';
 
   const onHold = 10;
-  const onHoldTime = "58 minutes per order";
+  const onHoldTime = '58 minutes per order';
 
   const inProcess = 123;
-  const inProcessTime = "120 minutes per order";
+  const inProcessTime = '120 minutes per order';
 
   const onPallet = 12;
-  const onPalletTime = "23 minutes per order";
+  const onPalletTime = '23 minutes per order';
 
   // ============= Lógica para la tabla de pickings ============
   const [pickings, setPickings] = useState<Picking[]>([]);
 
   // Estados para crear un nuevo picking
-  const [newOrderNumber, setNewOrderNumber] = useState("");
+  const [newOrderNumber, setNewOrderNumber] = useState('');
   const [newQuantity, setNewQuantity] = useState<number>(0);
 
   // Obtiene los pickings del backend
   const fetchPickings = async () => {
     try {
-      const res = await fetch("http://localhost:3000/picking");
+      const res = await fetch(`${API_URL}/picking`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setPickings(data);
       } else {
-        console.error("La respuesta no es un array:", data);
+        console.error('La respuesta no es un array:', data);
         setPickings([]);
       }
     } catch (error) {
-      console.error("Error al obtener pickings:", error);
+      console.error('Error al obtener pickings:', error);
     }
   };
 
@@ -207,43 +209,43 @@ export default function PickingPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/picking", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch(`${API_URL}/picking`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderNumber: newOrderNumber,
           quantity: newQuantity,
         }),
       });
       if (!res.ok) {
-        console.error("Error al crear picking:", await res.text());
+        console.error('Error al crear picking:', await res.text());
       }
-      setNewOrderNumber("");
+      setNewOrderNumber('');
       setNewQuantity(0);
       fetchPickings(); // refresca la tabla
     } catch (error) {
-      console.error("Error al crear picking:", error);
+      console.error('Error al crear picking:', error);
     }
   };
 
   // Editar un picking (demo: aquí solo mostramos un log)
   const handleEdit = (id: number) => {
-    console.log("Editar picking con id:", id);
+    console.log('Editar picking con id:', id);
     // Podrías abrir un modal para editar o navegar a otra ruta
   };
 
   // Eliminar un picking
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:3000/picking/${id}`, {
-        method: "DELETE",
+      const res = await fetch(`${API_URL}/picking/${id}`, {
+        method: 'DELETE',
       });
       if (!res.ok) {
-        console.error("Error al eliminar picking:", await res.text());
+        console.error('Error al eliminar picking:', await res.text());
       }
       fetchPickings(); // refresca la tabla
     } catch (error) {
-      console.error("Error al eliminar picking:", error);
+      console.error('Error al eliminar picking:', error);
     }
   };
 
@@ -293,7 +295,7 @@ export default function PickingPage() {
         </CardsGrid>
 
         {/* Botón de acción */}
-        <ActionButton style={{ alignSelf: "flex-start" }}>
+        <ActionButton style={{ alignSelf: 'flex-start' }}>
           View warehouses
         </ActionButton>
 
@@ -336,8 +338,12 @@ export default function PickingPage() {
                   <td>{p.orderNumber}</td>
                   <td>{p.quantity}</td>
                   <td>
-                    <ActionButton onClick={() => handleEdit(p.id)}>Edit</ActionButton>
-                    <ActionButton onClick={() => handleDelete(p.id)}>Delete</ActionButton>
+                    <ActionButton onClick={() => handleEdit(p.id)}>
+                      Edit
+                    </ActionButton>
+                    <ActionButton onClick={() => handleDelete(p.id)}>
+                      Delete
+                    </ActionButton>
                   </td>
                 </tr>
               ))}
