@@ -103,6 +103,10 @@ Thumbs.db
 # 📂 Extras sueltos que no deberían ir (¡échales un ojo!)
 /extraido.sh
 /codigo_componentes.txt
+/apps/frontend-web/ApoloWare_CodigoFuente.txt
+/apps/frontend-web/codigo_componentes_frontend_web.txt
+/apps/frontend-web/wms.sql
+/apps/frontend-web/extraido.sh
 
 /apolo-bot/
 apolo-bot/
