@@ -24,7 +24,10 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: LoginPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/login', credentials);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        credentials
+      );
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
@@ -42,7 +45,10 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (data: RegisterPayload, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/auth/register', data);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        data
+      );
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response.data);
