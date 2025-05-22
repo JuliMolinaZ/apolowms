@@ -1,19 +1,24 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { API_URL } from '../lib/config';
 
 interface SocketContextValue {
   socket: Socket | null;
 }
 
-export const SocketContext = createContext<SocketContextValue>({ socket: null });
+export const SocketContext = createContext<SocketContextValue>({
+  socket: null,
+});
 
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const socketIo = io('http://localhost:3000'); // Asegúrate de que la URL coincide con tu backend
+    const socketIo = io(API_URL); // Asegúrate de que la URL coincide con tu backend
     socketIo.on('connect', () => {
       console.log('[SocketProvider] Conectado con ID:', socketIo.id);
     });

@@ -1,76 +1,67 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { useThemeContext } from "../ThemeContext";
-import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../lib/config';
+import styled from 'styled-components';
+import { useThemeContext } from '../ThemeContext';
+import { usePathname } from 'next/navigation';
 
 // ===================== Tipado de Mensajes =====================
 interface Message {
-  sender: "user" | "bot";
+  sender: 'user' | 'bot';
   text: string;
 }
 
 // ===================== Preguntas Predefinidas =====================
 const predefinedQueries = {
-  "Gestión de Ítems": {
-    "Consultas": [
-      "Quiero saber el ítem con SKU-001",
-      "Necesito información del producto Producto A",
-      "Consulta el ítem ABC",
+  'Gestión de Ítems': {
+    Consultas: [
+      'Quiero saber el ítem con SKU-001',
+      'Necesito información del producto Producto A',
+      'Consulta el ítem ABC',
     ],
-    "Listados": [
-      "Muéstrame todos los productos",
-      "Lista todos los ítems",
-      "Enséñame el catálogo completo",
+    Listados: [
+      'Muéstrame todos los productos',
+      'Lista todos los ítems',
+      'Enséñame el catálogo completo',
     ],
-    "Creación": [
-      "Crea un producto con SKU 504-002, nombre Sudadera, descripción Sudadera grande, precio 100 y stock 20",
+    Creación: [
+      'Crea un producto con SKU 504-002, nombre Sudadera, descripción Sudadera grande, precio 100 y stock 20',
     ],
-    "Edición": [
-      "Edita el producto SKU-001 y cambia su nombre a ProductoBotTest",
-      "Modifica el ítem Producto A y actualiza su precio a 29.99 y stock a 100",
+    Edición: [
+      'Edita el producto SKU-001 y cambia su nombre a ProductoBotTest',
+      'Modifica el ítem Producto A y actualiza su precio a 29.99 y stock a 100',
     ],
-    "Eliminación": [
-      "Elimina el producto Zapatos",
-      "Borra el ítem Producto B",
-    ],
+    Eliminación: ['Elimina el producto Zapatos', 'Borra el ítem Producto B'],
   },
-  "Informes Gerenciales": {
-    "Inventario": [
-      "¿Cuál es el valor total de todos los productos?",
-      "¿Cuántos productos hay en total?",
-      "¿Cuántas unidades hay en total?",
+  'Informes Gerenciales': {
+    Inventario: [
+      '¿Cuál es el valor total de todos los productos?',
+      '¿Cuántos productos hay en total?',
+      '¿Cuántas unidades hay en total?',
     ],
-    "Stock": [
-      "¿Cuál es el producto con más stock?",
-      "¿Cuál es el producto con menos stock?",
+    Stock: [
+      '¿Cuál es el producto con más stock?',
+      '¿Cuál es el producto con menos stock?',
     ],
-    "Precios": [
-      "¿Cuál es el producto con mayor precio?",
-      "¿Cuál es el producto con menor precio?",
-      "¿Cuál es el precio promedio de los productos?",
+    Precios: [
+      '¿Cuál es el producto con mayor precio?',
+      '¿Cuál es el producto con menor precio?',
+      '¿Cuál es el precio promedio de los productos?',
     ],
-    "Valoración": [
-      "¿Cuál es el producto más valioso del inventario?",
-    ],
+    Valoración: ['¿Cuál es el producto más valioso del inventario?'],
   },
-  "Otras preguntas": {
-    "Básicas": [
-      "Hola",
-      "¿Eres un bot?",
-      "¿Cómo te llamas?",
-      "Adiós",
-    ],
+  'Otras preguntas': {
+    Básicas: ['Hola', '¿Eres un bot?', '¿Cómo te llamas?', 'Adiós'],
   },
 };
 
 // ===================== Imágenes del Botón según el Tema =====================
 // Indice 0 → theme1, indice 1 → theme2, indice 2 → theme3
 const TitanChatImages = [
-  "/images/titan-chat-blue.png",    // Para theme1
-  "/images/titan-chat-green.png",   // Para theme2
-  "/images/titan-chat-violet.png",  // Para theme3
+  '/images/titan-chat-blue.png', // Para theme1
+  '/images/titan-chat-green.png', // Para theme2
+  '/images/titan-chat-violet.png', // Para theme3
 ];
 
 // ===================== Componente Principal: TitanChatButton =====================
@@ -79,7 +70,7 @@ export default function TitanChatButton() {
   const pathname = usePathname();
 
   // Ejemplo: ocultar el botón si la ruta es "/login" o "/titan"
-  if (pathname === "/login" || pathname === "/titan") {
+  if (pathname === '/login' || pathname === '/titan') {
     return null; // No renderiza nada
   }
 
@@ -94,7 +85,7 @@ export default function TitanChatButton() {
 
   // Reiniciar la conversación
   const handleRestart = () => {
-    localStorage.removeItem("chatMessages");
+    localStorage.removeItem('chatMessages');
     setChatOpen(false);
   };
 
@@ -107,7 +98,10 @@ export default function TitanChatButton() {
 
       {/* Ventana de Chat */}
       {chatOpen && (
-        <ChatWindow onClose={() => setChatOpen(false)} onRestart={handleRestart} />
+        <ChatWindow
+          onClose={() => setChatOpen(false)}
+          onRestart={handleRestart}
+        />
       )}
     </>
   );
@@ -120,60 +114,59 @@ const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
 }) => {
   // Mensajes en el chat
   const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = localStorage.getItem("chatMessages");
+    const saved = localStorage.getItem('chatMessages');
     return saved
       ? JSON.parse(saved)
       : [
           {
-            sender: "bot",
-            text:
-              "¡Hola, soy Titan! Estoy aquí para ayudarte con la plataforma APOLO. ¿En qué puedo ayudarte?",
+            sender: 'bot',
+            text: '¡Hola, soy Titan! Estoy aquí para ayudarte con la plataforma APOLO. ¿En qué puedo ayudarte?',
           },
         ];
   });
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [showHelp, setShowHelp] = useState(false);
 
   // Guardar conversación en localStorage cada vez que cambie
   useEffect(() => {
-    localStorage.setItem("chatMessages", JSON.stringify(messages));
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
   }, [messages]);
 
   // Enviar mensaje al backend (Rasa, etc.)
   const sendMessage = async (msg: string) => {
     // Agregar mensaje del usuario al state
-    setMessages((prev) => [...prev, { sender: "user", text: msg }]);
+    setMessages((prev) => [...prev, { sender: 'user', text: msg }]);
 
     try {
       // Ajusta la URL a la de tu servidor Rasa (o tu endpoint de IA)
-      const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sender: "usuario", message: msg }),
+      const response = await fetch(`${API_URL}/webhooks/rest/webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: 'usuario', message: msg }),
       });
       const data = await response.json();
 
       data.forEach((botResp: { recipient_id: string; text: string }) => {
-        setMessages((prev) => [...prev, { sender: "bot", text: botResp.text }]);
+        setMessages((prev) => [...prev, { sender: 'bot', text: botResp.text }]);
       });
     } catch (error) {
-      console.error("Error al enviar el mensaje a Rasa:", error);
+      console.error('Error al enviar el mensaje a Rasa:', error);
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "Error de conexión con el chatbot." },
+        { sender: 'bot', text: 'Error de conexión con el chatbot.' },
       ]);
     }
   };
 
   const handleSend = () => {
-    if (input.trim() !== "") {
+    if (input.trim() !== '') {
       sendMessage(input.trim());
-      setInput("");
+      setInput('');
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSend();
     }
@@ -194,7 +187,10 @@ const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
             <SubcategoryTitle>{subcategory}</SubcategoryTitle>
             <ButtonGroup>
               {queries.map((query, index) => (
-                <QueryButton key={index} onClick={() => handlePredefinedClick(query)}>
+                <QueryButton
+                  key={index}
+                  onClick={() => handlePredefinedClick(query)}
+                >
                   {query}
                 </QueryButton>
               ))}
@@ -211,7 +207,9 @@ const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
       <ChatHeader>
         <h3>TITAN</h3>
         <HeaderButtons>
-          <HelpButton onClick={() => setShowHelp((prev) => !prev)}>Ayuda</HelpButton>
+          <HelpButton onClick={() => setShowHelp((prev) => !prev)}>
+            Ayuda
+          </HelpButton>
           <RestartButton onClick={onRestart}>Reiniciar</RestartButton>
           <CloseButton onClick={onClose}>X</CloseButton>
         </HeaderButtons>
@@ -225,7 +223,8 @@ const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
             <HelpInfo>
               APOLO es una plataforma integral para la gestión de inventarios y
               operaciones logísticas. Con Titan, puedes gestionar ítems
-              (consultar, crear, editar, eliminar) y obtener informes gerenciales.
+              (consultar, crear, editar, eliminar) y obtener informes
+              gerenciales.
             </HelpInfo>
             {renderPredefinedQueries()}
           </HelpContainer>
@@ -235,7 +234,7 @@ const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
       {/* Lista de Mensajes */}
       <ChatMessages>
         {messages.map((msg, index) => (
-          <MessageBubble key={index} $isUser={msg.sender === "user"}>
+          <MessageBubble key={index} $isUser={msg.sender === 'user'}>
             {msg.text}
           </MessageBubble>
         ))}
@@ -269,7 +268,7 @@ const FloatingButton = styled.button`
   width: 60px;
   border: none;
   border-radius: 50%;
-  background-color: transparent;  /* Sin fondo */
+  background-color: transparent; /* Sin fondo */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -431,13 +430,13 @@ const ChatMessages = styled.div`
 const MessageBubble = styled.div<{ $isUser: boolean }>`
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-  color: ${(props) => (props.$isUser ? "blue" : "#333")};
-  text-align: ${(props) => (props.$isUser ? "right" : "left")};
+  color: ${(props) => (props.$isUser ? 'blue' : '#333')};
+  text-align: ${(props) => (props.$isUser ? 'right' : 'left')};
   padding: 0.5rem;
-  background: ${(props) => (props.$isUser ? "#e0f7fa" : "#fff")};
+  background: ${(props) => (props.$isUser ? '#e0f7fa' : '#fff')};
   border-radius: 8px;
   max-width: 80%;
-  align-self: ${(props) => (props.$isUser ? "flex-end" : "flex-start")};
+  align-self: ${(props) => (props.$isUser ? 'flex-end' : 'flex-start')};
 `;
 
 // Input + Botón "Enviar"

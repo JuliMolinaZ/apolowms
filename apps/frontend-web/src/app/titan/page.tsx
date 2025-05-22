@@ -1,50 +1,51 @@
-"use client";
-import React, { useState } from "react";
-import styled from "styled-components";
-import { FaVolumeUp, FaMicrophone } from "react-icons/fa";
+'use client';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { FaVolumeUp, FaMicrophone } from 'react-icons/fa';
+import { API_URL } from '../../lib/config';
 
 // ====================== PREGUNTAS DEL PANEL IZQUIERDO ======================
 const leftPanelQuestions = [
   {
-    category: "Inventario",
+    category: 'Inventario',
     questions: [
-      "¿Cuál es el valor total de todos los productos?",
-      "¿Cuántos productos hay en total?",
-      "¿Cuántas unidades hay en total?",
+      '¿Cuál es el valor total de todos los productos?',
+      '¿Cuántos productos hay en total?',
+      '¿Cuántas unidades hay en total?',
     ],
   },
   {
-    category: "Stock",
+    category: 'Stock',
     questions: [
-      "¿Cuál es el producto con más stock?",
-      "¿Cuál es el producto con menos stock?",
+      '¿Cuál es el producto con más stock?',
+      '¿Cuál es el producto con menos stock?',
     ],
   },
   {
-    category: "Precios",
+    category: 'Precios',
     questions: [
-      "¿Cuál es el producto con mayor precio?",
-      "¿Cuál es el producto con menor precio?",
+      '¿Cuál es el producto con mayor precio?',
+      '¿Cuál es el producto con menor precio?',
     ],
   },
   {
-    category: "Valoración",
-    questions: ["¿Cuál es el producto más valioso del inventario?"],
+    category: 'Valoración',
+    questions: ['¿Cuál es el producto más valioso del inventario?'],
   },
   {
-    category: "Consultas Adicionales",
+    category: 'Consultas Adicionales',
     questions: [
-      "¿Cuándo es momento de pedir para este producto?",
-      "¿Cuál es la capacidad actual de almacenaje de mis 3 centros de distribución?",
-      "¿Quiénes son mis colaboradores más activos?",
-      "¿Cuál ha sido mi porcentaje de coincidencia en los últimos conteos cíclicos?",
+      '¿Cuándo es momento de pedir para este producto?',
+      '¿Cuál es la capacidad actual de almacenaje de mis 3 centros de distribución?',
+      '¿Quiénes son mis colaboradores más activos?',
+      '¿Cuál ha sido mi porcentaje de coincidencia en los últimos conteos cíclicos?',
     ],
   },
 ];
 
 // ====================== TIPADO PARA MENSAJES ======================
 interface Message {
-  sender: "user" | "bot";
+  sender: 'user' | 'bot';
   text: string;
   image?: string;
 }
@@ -53,10 +54,10 @@ interface Message {
 export default function TitanPage() {
   // Estado de la conversación
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", text: "¡Hola! ¿En qué puedo ayudarte?" },
+    { sender: 'bot', text: '¡Hola! ¿En qué puedo ayudarte?' },
   ]);
   // Estado del input del mensaje
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
 
   // Función de voz mejorada: divide el texto en oraciones y las reproduce secuencialmente.
   const speakText = (text: string) => {
@@ -67,7 +68,7 @@ export default function TitanPage() {
       if (index < sentences.length) {
         const utterance = new SpeechSynthesisUtterance(sentences[index]);
         // Usamos "es-MX" para un acento más latino; ajusta rate y pitch para conseguir un tono más natural
-        utterance.lang = "es-US";
+        utterance.lang = 'es-US';
         utterance.rate = 0.92; // Un poco más lento para mayor claridad
         utterance.pitch = 1.0; // Tono normal
         utterance.onend = () => {
@@ -86,11 +87,11 @@ export default function TitanPage() {
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Tu navegador no soporta el reconocimiento de voz.");
+      alert('Tu navegador no soporta el reconocimiento de voz.');
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "es-MX";
+    recognition.lang = 'es-MX';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onresult = (event: any) => {
@@ -98,7 +99,7 @@ export default function TitanPage() {
       setInput(transcript);
     };
     recognition.onerror = (event: { error: any }) => {
-      console.error("Error en reconocimiento de voz:", event.error);
+      console.error('Error en reconocimiento de voz:', event.error);
     };
     recognition.start();
   };
@@ -109,37 +110,40 @@ export default function TitanPage() {
     if (!trimmed) return;
 
     // Agregar el mensaje del usuario
-    const userMsg: Message = { sender: "user", text: trimmed };
+    const userMsg: Message = { sender: 'user', text: trimmed };
     setMessages((prev) => [...prev, userMsg]);
 
-    const payload = { sender: "usuario123", message: trimmed };
+    const payload = { sender: 'usuario123', message: trimmed };
 
     try {
-      const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch(`${API_URL}/webhooks/rest/webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       const data = await response.json();
       data.forEach((reply: any) => {
         const botMsg: Message = {
-          sender: "bot",
-          text: reply.text ? reply.text : "GRAFICO:",
+          sender: 'bot',
+          text: reply.text ? reply.text : 'GRAFICO:',
           image: reply.image || null,
         };
         setMessages((prev) => [...prev, botMsg]);
       });
     } catch (error) {
-      console.error("Error al conectar con Rasa:", error);
-      const errorMsg: Message = { sender: "bot", text: "Hubo un error al obtener la respuesta." };
+      console.error('Error al conectar con Rasa:', error);
+      const errorMsg: Message = {
+        sender: 'bot',
+        text: 'Hubo un error al obtener la respuesta.',
+      };
       setMessages((prev) => [...prev, errorMsg]);
     }
-    setInput("");
+    setInput('');
   };
 
   // Permite enviar el mensaje con la tecla Enter
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       handleSend();
     }
@@ -176,11 +180,11 @@ export default function TitanPage() {
         <ChatContainer>
           <MessagesContainer>
             {messages.map((msg, index) => (
-              <MessageRow key={index} $isUser={msg.sender === "user"}>
-                <MessageBubble $isUser={msg.sender === "user"}>
+              <MessageRow key={index} $isUser={msg.sender === 'user'}>
+                <MessageBubble $isUser={msg.sender === 'user'}>
                   <MessageContent>
                     <TextContent>{msg.text}</TextContent>
-                    {msg.sender === "bot" && (
+                    {msg.sender === 'bot' && (
                       <ReadButton onClick={() => speakText(msg.text)}>
                         <FaVolumeUp />
                       </ReadButton>
@@ -309,14 +313,14 @@ interface MessageRowProps {
 }
 const MessageRow = styled.div<MessageRowProps>`
   display: flex;
-  justify-content: ${(p) => (p.$isUser ? "flex-end" : "flex-start")};
+  justify-content: ${(p) => (p.$isUser ? 'flex-end' : 'flex-start')};
 `;
 interface MessageBubbleProps {
   $isUser: boolean;
 }
 const MessageBubble = styled.div<MessageBubbleProps>`
   max-width: 60%;
-  background-color: ${(p) => (p.$isUser ? "#d7ebff" : "#ffffff")};
+  background-color: ${(p) => (p.$isUser ? '#d7ebff' : '#ffffff')};
   color: #333;
   padding: 0.6rem 0.8rem;
   border-radius: 8px;
