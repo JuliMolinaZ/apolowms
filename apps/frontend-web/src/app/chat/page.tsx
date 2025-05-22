@@ -1,7 +1,7 @@
 // app/(protected)/chat/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CallModal from "@/components/Chat/CallModal";
 import {
   Container,
@@ -49,59 +49,76 @@ import {
   ReloadIcon,
   NoUserSelected,
 } from "@/components/Chat/styles";
+import { API_URL } from "@/lib/config";
+import { useSocket } from "@/context/socketContext";
+import { useAuth } from "@/context/AuthContext";
 
-/* Tipos y datos mock */
 interface User {
   id: number;
-  name: string;
+  username: string;
   isOnline: boolean;
-  avatar: string;
+  profileImage?: string;
 }
 
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "Julimz",
-    isOnline: true,
-    avatar: "/images/user1.jpg",
-  },
-  {
-    id: 2,
-    name: "Offline",
-    isOnline: false,
-    avatar: "/images/user2.jpg",
-  },
-  {
-    id: 3,
-    name: "UserX",
-    isOnline: true,
-    avatar: "/images/user3.jpg",
-  },
-];
-
-interface Message {
-  id: number;
-  userId: number;
+interface ChatMessage {
+  room: string;
+  sender: string;
+  recipient: string;
   text: string;
-  time: string;
+  timestamp: number;
 }
-
-const mockMessages: Message[] = [
-  {
-    id: 101,
-    userId: 1,
-    text: "Hola, ¿en qué puedo ayudarte?",
-    time: "3:40 pm",
-  },
-];
 
 type CallType = "audio" | "video" | null;
 
 export default function ChatPage() {
-  const [selectedUser, setSelectedUser] = useState<User | null>(mockUsers[0]);
+  const { socket } = useSocket();
+  const { user } = useAuth();
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [room, setRoom] = useState<string>("");
   const [showProfileCard, setShowProfileCard] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [callType, setCallType] = useState<CallType>(null);
+
+  // Fetch users from backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${API_URL}/users`);
+        const data = await res.json();
+        setUsers(data);
+        setSelectedUser((prev) => prev || data[0] || null);
+      } catch (err) {
+        console.error("Error fetching users", err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Join room and listen for messages
+  useEffect(() => {
+    if (!socket || !user || !selectedUser) return;
+    const newRoom = [user.username, selectedUser.username].sort().join("-");
+    setRoom(newRoom);
+    socket.emit("joinRoom", { room: newRoom, username: user.username });
+
+    const handleHistory = (msgs: ChatMessage[]) => {
+      setMessages(msgs);
+    };
+    const handleNewMessage = (msg: ChatMessage) => {
+      setMessages((prev) => [...prev, msg]);
+    };
+
+    socket.on("roomHistory", handleHistory);
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("roomHistory", handleHistory);
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [socket, user, selectedUser]);
 
   const handleSelectUser = (user: User) => {
     setSelectedUser(user);
@@ -113,8 +130,13 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-    alert(`Mensaje enviado: ${inputMessage}`);
+    if (!inputMessage.trim() || !socket || !user || !selectedUser) return;
+    socket.emit("chatMessage", {
+      room,
+      sender: user.username,
+      recipient: selectedUser.username,
+      text: inputMessage.trim(),
+    });
     setInputMessage("");
   };
 
@@ -162,18 +184,21 @@ export default function ChatPage() {
         <LeftPanel>
           <UsersTitle>Usuarios</UsersTitle>
           <UsersList>
-            {mockUsers.map((user) => (
+            {users.map((user) => (
               <UserItem
                 key={user.id}
                 onClick={() => handleSelectUser(user)}
                 $selected={selectedUser?.id === user.id}
               >
                 <AvatarWrapper>
-                  <UserAvatarImg src={user.avatar} alt={user.name} />
+                  <UserAvatarImg
+                    src={user.profileImage || "/logos/default-avatar.png"}
+                    alt={user.username}
+                  />
                   <StatusDot $online={user.isOnline} />
                 </AvatarWrapper>
                 <UserText>
-                  <UserName>{user.name}</UserName>
+                  <UserName>{user.username}</UserName>
                   <UserStatus $online={user.isOnline}>
                     {user.isOnline ? "Online" : "Offline"}
                   </UserStatus>
@@ -189,17 +214,23 @@ export default function ChatPage() {
             <>
               <ChatHeader>
                 <UserHeader onClick={handleToggleProfileCard}>
-                  <HeaderAvatarImg src={selectedUser.avatar} alt={selectedUser.name} />
+                  <HeaderAvatarImg
+                    src={selectedUser.profileImage || "/logos/default-avatar.png"}
+                    alt={selectedUser.username}
+                  />
                   <HeaderInfo>
-                    <HeaderName>{selectedUser.name}</HeaderName>
+                    <HeaderName>{selectedUser.username}</HeaderName>
                     <HeaderTime>4:00 PM local time</HeaderTime>
                   </HeaderInfo>
                 </UserHeader>
 
                 {showProfileCard && (
                   <ProfileCard>
-                    <ProfileImg src={selectedUser.avatar} alt={selectedUser.name} />
-                    <ProfileName>{selectedUser.name}</ProfileName>
+                    <ProfileImg
+                      src={selectedUser.profileImage || "/logos/default-avatar.png"}
+                      alt={selectedUser.username}
+                    />
+                    <ProfileName>{selectedUser.username}</ProfileName>
                     <ProfileRole>Operator</ProfileRole>
                     <ProfileLocalTime>4:00 PM local time</ProfileLocalTime>
                     <ProfileActions>
@@ -219,20 +250,32 @@ export default function ChatPage() {
 
               {/* Mensajes */}
               <MessagesArea>
-                {mockMessages
-                  .filter((m) => m.userId === selectedUser.id)
-                  .map((msg) => (
-                    <MessageRow key={msg.id}>
-                      <MsgAvatarImg src={selectedUser.avatar} alt={selectedUser.name} />
+                {messages.map((msg) => {
+                  const isSelf = msg.sender === user?.username;
+                  const senderUser = isSelf
+                    ? user
+                    : users.find((u) => u.username === msg.sender) || selectedUser;
+                  return (
+                    <MessageRow key={msg.timestamp}>
+                      <MsgAvatarImg
+                        src={senderUser?.profileImage || "/logos/default-avatar.png"}
+                        alt={senderUser?.username || "user"}
+                      />
                       <MsgBubble>
                         <MsgHeader>
-                          <MsgUserName>{selectedUser.name}</MsgUserName>
-                          <MsgTime>{msg.time}</MsgTime>
+                          <MsgUserName>{senderUser?.username}</MsgUserName>
+                          <MsgTime>
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </MsgTime>
                         </MsgHeader>
                         <MsgText>{msg.text}</MsgText>
                       </MsgBubble>
                     </MessageRow>
-                  ))}
+                  );
+                })}
               </MessagesArea>
 
               {/* Barra de input para escribir mensaje */}
