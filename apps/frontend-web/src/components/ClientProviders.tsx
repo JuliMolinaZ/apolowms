@@ -6,6 +6,7 @@ import { store } from "../store";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { ThemeProvider as StyledThemeProvider } from "styled-components";
 import { AuthProvider } from "@/context/AuthContext";
+import { SocketProvider } from "@/context/socketContext";
 import Notification from "../components/Notification/Notification";
 import { ThemeProviderClient, useThemeContext } from "@/components/ThemeContext";
 import { ToastContainer } from "react-toastify";
@@ -19,9 +20,11 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <Provider store={store}>
       <AuthProvider>
-        <ThemeProviderClient>
-          <InnerProviders>{children}</InnerProviders>
-        </ThemeProviderClient>
+        <SocketProvider>
+          <ThemeProviderClient>
+            <InnerProviders>{children}</InnerProviders>
+          </ThemeProviderClient>
+        </SocketProvider>
       </AuthProvider>
     </Provider>
   );
