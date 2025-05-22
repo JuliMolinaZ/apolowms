@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Image from "next/image";
 import CappasityViewer from "../../../components/Items/CappasityViewer";
+import { API_URL } from "../../../lib/config";
+
+const resolveImage = (img?: string) => {
+  if (!img) return "/logos/cube.svg";
+  if (img.startsWith("http") || img.startsWith("/")) return img;
+  return `${API_URL}/uploads/${img}`;
+};
 
 /** Modelo de datos */
 interface LocationInfo {
@@ -16,243 +23,39 @@ interface LocationInfo {
 interface Item {
   id: number;
   name: string;
-  brand: string;
-  price: string;
+  brand?: string;
+  price?: string | number;
   stock: number;
   sku: string;
-  description: string;
-  image: string;
+  description?: string;
+  image?: string;
   viewerUrl?: string;
-  barcode: string;
-  otherStock: LocationInfo[];
+  barcode?: string;
+  otherStock?: LocationInfo[];
 }
 
-/** Datos de ejemplo: 
- * Los primeros 4 ítems son Nike, V-block, Sofá Reclinable y Taladro Inalámbrico (con API 3D).
- * Luego se agregan 8 ítems adicionales con datos demo.
- */
-const mockItems: Item[] = [
-  // ==================== PRIMEROS 4 ITEMS ====================
-  {
-    id: 1,
-    name: "Nike Zoom Pro",
-    brand: "Nike",
-    price: "$129.99",
-    stock: 48,
-    sku: "SKU-NIKE-ZOOM-001",
-    description:
-      "Zapatillas deportivas de alta gama, ideales para running y entrenamiento profesional.",
-    image: "/images/items/deportivos.png",
-    viewerUrl:
-      "https://api.cappasity.com/api/player/1a7a1215-c5a0-4a83-bccd-ce334eb34b41/embedded?arbutton=0&autorun=0",
-    barcode: "1234567890123",
-    otherStock: [
-      { location: "CDMX-WH1", quantity: 25, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Monterrey-WH2", quantity: 15, lastUpdate: "2025-03-18", status: "LOW" },
-      { location: "Tokio-WH9", quantity: 8, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-  {
-    id: 2,
-    name: "V-block",
-    brand: "TechOne",
-    price: "$899.99",
-    stock: 12,
-    sku: "SKU-LAPTOP-002",
-    description:
-      "Laptop de alto rendimiento con procesador Intel i9, 16GB RAM y pantalla 4K.",
-    image: "/images/items/V-block.png",
-    viewerUrl:
-      "https://api.cappasity.com/api/player/59f608a5-937e-430c-8fa0-8f43aa942ba7/embedded?arbutton=0&autorun=0",
-    barcode: "9876543210987",
-    otherStock: [
-      { location: "Houston-WH3", quantity: 5, lastUpdate: "2025-03-21", status: "OK" },
-      { location: "Los Angeles-WH5", quantity: 2, lastUpdate: "2025-03-19", status: "LOW" },
-      { location: "Tokio-WH9", quantity: 5, lastUpdate: "2025-03-23", status: "OK" },
-    ],
-  },
-  {
-    id: 3,
-    name: "Sofá Reclinable Luxe",
-    brand: "HomeComfort",
-    price: "$1,299.99",
-    stock: 5,
-    sku: "SKU-SOFA-003",
-    description:
-      "Sofá premium reclinable de cuero sintético, con soporte lumbar y reposabrazos ajustables.",
-    image: "/images/items/silla.png",
-    viewerUrl:
-      "https://api.cappasity.com/api/player/97f8ef1b-a4db-462e-899b-f8c0059c9896/embedded?arbutton=0&autorun=0",
-    barcode: "1122334455667",
-    otherStock: [
-      { location: "Monterrey-WH2", quantity: 2, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "CDMX-WH1", quantity: 1, lastUpdate: "2025-03-21", status: "LOW" },
-      { location: "Houston-WH3", quantity: 2, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-  {
-    id: 4,
-    name: "Taladro Inalámbrico ProMax",
-    brand: "ToolMaster",
-    price: "$149.99",
-    stock: 30,
-    sku: "SKU-TALADRO-004",
-    description:
-      "Taladro inalámbrico con batería de larga duración y torque ajustable de hasta 50Nm.",
-    image: "/images/items/herramientas.png",
-    viewerUrl:
-      "https://api.cappasity.com/api/player/8840c5f0-1f88-4c47-aae8-93f139875895/embedded?arbutton=0&autorun=0",
-    barcode: "1234509876543",
-    otherStock: [
-      { location: "Guadalajara-WH4", quantity: 10, lastUpdate: "2025-03-19", status: "OK" },
-      { location: "CDMX-WH1", quantity: 10, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Monterrey-WH2", quantity: 10, lastUpdate: "2025-03-18", status: "OK" },
-    ],
-  },
 
-  // ==================== 8 ITEMS ADICIONALES ====================
-  {
-    id: 5,
-    name: "Camisa Casual",
-    brand: "UrbanStyle",
-    price: "$29.99",
-    stock: 60,
-    sku: "SKU-CAMISA-005",
-    description:
-      "Camisa de algodón de alta calidad, perfecta para uso diario o reuniones informales.",
-    image: "/images/items/camisa.jpg",
-    barcode: "3456789012345",
-    otherStock: [
-      { location: "CDMX-WH1", quantity: 20, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Houston-WH3", quantity: 20, lastUpdate: "2025-03-18", status: "OK" },
-      { location: "Tokio-WH9", quantity: 20, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-  {
-    id: 6,
-    name: "Chamarra Acolchada",
-    brand: "WinterPro",
-    price: "$59.99",
-    stock: 25,
-    sku: "SKU-CHAMARRA-006",
-    description:
-      "Chamarra abrigadora para climas fríos, con relleno de alta calidad y diseño moderno.",
-    image: "/images/items/chamarra.jpg",
-    viewerUrl:
-      "https://api.cappasity.com/api/player/8840c5f0-1f88-4c47-aae8-93f139875895/embedded?arbutton=0&autorun=0",
-    barcode: "4567890123456",
-    otherStock: [
-      { location: "Monterrey-WH2", quantity: 10, lastUpdate: "2025-03-20", status: "LOW" },
-      { location: "Los Angeles-WH5", quantity: 5, lastUpdate: "2025-03-19", status: "OK" },
-      { location: "CDMX-WH1", quantity: 10, lastUpdate: "2025-03-23", status: "OK" },
-    ],
-  },
-  {
-    id: 7,
-    name: "Gorra Deportiva",
-    brand: "ActiveGear",
-    price: "$14.99",
-    stock: 100,
-    sku: "SKU-GORRA-007",
-    description:
-      "Gorra ajustable disponible en varios colores, ideal para actividades al aire libre.",
-    image: "/images/items/gorra.jpg",
-    barcode: "5678901234567",
-    otherStock: [
-      { location: "CDMX-WH1", quantity: 40, lastUpdate: "2025-03-18", status: "OK" },
-      { location: "Houston-WH3", quantity: 30, lastUpdate: "2025-03-19", status: "OK" },
-      { location: "Tokio-WH9", quantity: 30, lastUpdate: "2025-03-21", status: "OK" },
-    ],
-  },
-  {
-    id: 8,
-    name: "Pantalones Mezclilla",
-    brand: "DenimCo",
-    price: "$39.99",
-    stock: 45,
-    sku: "SKU-PANTALONES-008",
-    description:
-      "Pantalones de mezclilla resistentes, corte clásico y bolsillos reforzados.",
-    image: "/images/items/pantalones.jpg",
-    barcode: "6789012345678",
-    otherStock: [
-      { location: "Guadalajara-WH4", quantity: 15, lastUpdate: "2025-03-17", status: "OK" },
-      { location: "CDMX-WH1", quantity: 15, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Monterrey-WH2", quantity: 15, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-  {
-    id: 9,
-    name: "Zapatos Casual",
-    brand: "UrbanStyle",
-    price: "$49.99",
-    stock: 35,
-    sku: "SKU-ZAPATOS-009",
-    description:
-      "Zapatos cómodos para el día a día, suela antideslizante y plantilla acolchada.",
-    image: "/images/items/skechers.jpg",
-    barcode: "7890123456789",
-    otherStock: [
-      { location: "Monterrey-WH2", quantity: 15, lastUpdate: "2025-03-19", status: "OK" },
-      { location: "CDMX-WH1", quantity: 10, lastUpdate: "2025-03-20", status: "LOW" },
-      { location: "Houston-WH3", quantity: 10, lastUpdate: "2025-03-21", status: "OK" },
-    ],
-  },
-  {
-    id: 10,
-    name: "Laptop X-5000",
-    brand: "TechOne",
-    price: "$999.99",
-    stock: 8,
-    sku: "SKU-LAPTOP-010",
-    description:
-      "Laptop de alto rendimiento con pantalla 4K y batería de larga duración.",
-    image: "/images/items/laptop.jpg",
-    barcode: "8901234567890",
-    otherStock: [
-      { location: "Houston-WH3", quantity: 3, lastUpdate: "2025-03-21", status: "OK" },
-      { location: "Los Angeles-WH5", quantity: 2, lastUpdate: "2025-03-19", status: "LOW" },
-      { location: "Tokio-WH9", quantity: 3, lastUpdate: "2025-03-23", status: "OK" },
-    ],
-  },
-  {
-    id: 11,
-    name: "Sombrero de Playa",
-    brand: "SunnyCo",
-    price: "$19.99",
-    stock: 50,
-    sku: "SKU-SOMBRERO-011",
-    description:
-      "Sombrero amplio para proteger del sol, con cinta ajustable y tejido transpirable.",
-    image: "/images/items/sombrero.png",
-    barcode: "9012345678901",
-    otherStock: [
-      { location: "CDMX-WH1", quantity: 20, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Houston-WH3", quantity: 15, lastUpdate: "2025-03-18", status: "OK" },
-      { location: "Monterrey-WH2", quantity: 15, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-  {
-    id: 12,
-    name: "Sudadera Deportiva",
-    brand: "ActiveGear",
-    price: "$34.99",
-    stock: 60,
-    sku: "SKU-SUDADERA-012",
-    description:
-      "Sudadera con capucha, ideal para entrenamiento o uso casual en climas frescos.",
-    image: "/images/items/chamarra.jpg",
-    barcode: "0123456789012",
-    otherStock: [
-      { location: "Guadalajara-WH4", quantity: 20, lastUpdate: "2025-03-19", status: "OK" },
-      { location: "CDMX-WH1", quantity: 20, lastUpdate: "2025-03-20", status: "OK" },
-      { location: "Tokio-WH9", quantity: 20, lastUpdate: "2025-03-22", status: "OK" },
-    ],
-  },
-];
 
 export default function ItemsPage() {
+  const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  // Obtiene los ítems del backend
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch(`${API_URL}/items`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setItems(data);
+        }
+      } catch (error) {
+        console.error('Error al obtener items:', error);
+      }
+    };
+    fetchItems();
+  }, []);
+
 
   return (
     <PageContainer>
@@ -261,7 +64,7 @@ export default function ItemsPage() {
           <IconImage src="/logos/cube.svg" alt="Cube Icon" />
         </GreenCircle>
         <HeaderText>
-          Items <span>{mockItems.length}</span>
+          Items <span>{items.length}</span>
         </HeaderText>
       </HeaderWrapper>
 
@@ -269,19 +72,19 @@ export default function ItemsPage() {
         <DetailView item={selectedItem} onClose={() => setSelectedItem(null)} />
       ) : (
         <ItemsGrid>
-          {mockItems.map((item) => (
+          {items.map((item) => (
             <ItemCard key={item.id} onClick={() => setSelectedItem(item)}>
               <ImageWrapper>
                 <StyledImage
-                  src={item.image}
+                  src={resolveImage(item.image)}
                   alt={item.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 240px"
                 />
               </ImageWrapper>
               <ItemName>{item.name}</ItemName>
-              <ItemBrand>{item.brand}</ItemBrand>
-              <ItemPrice>{item.price}</ItemPrice>
+              {item.brand && <ItemBrand>{item.brand}</ItemBrand>}
+              {item.price && <ItemPrice>{item.price}</ItemPrice>}
             </ItemCard>
           ))}
         </ItemsGrid>
@@ -304,12 +107,12 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onClose }) => {
           {item.viewerUrl ? (
             <CappasityViewer src={item.viewerUrl} />
           ) : (
-            <DetailImage src={item.image} alt={item.name} />
+            <DetailImage src={resolveImage(item.image)} alt={item.name} />
           )}
         </TopImageContainer>
 
         <Row>
-          <Price>{item.price}</Price>
+          {item.price && <Price>{item.price}</Price>}
           <ProductTitle>{item.name}</ProductTitle>
           <StockInfo>Stock <BlueNumber>{item.stock}</BlueNumber></StockInfo>
         </Row>
@@ -328,15 +131,19 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onClose }) => {
         </InfoRow>
 
         <BottomRow>
-          <BarcodeSection>
-            <BarcodeImage
-              src={`https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(
-                item.barcode
-              )}&code=Code128&translate-esc=off`}
-              alt="Barcode"
-            />
-            <BarcodeValue><BlueNumber>{item.barcode}</BlueNumber></BarcodeValue>
-          </BarcodeSection>
+          {item.barcode && (
+            <BarcodeSection>
+              <BarcodeImage
+                src={`https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(
+                  item.barcode
+                )}&code=Code128&translate-esc=off`}
+                alt="Barcode"
+              />
+              <BarcodeValue>
+                <BlueNumber>{item.barcode}</BlueNumber>
+              </BarcodeValue>
+            </BarcodeSection>
+          )}
 
           <LocationsSection>
             <LocationsTitle>Ubicaciones actuales</LocationsTitle>
@@ -350,7 +157,7 @@ const DetailView: React.FC<DetailViewProps> = ({ item, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                {item.otherStock.map((loc, index) => (
+                {item.otherStock?.map((loc, index) => (
                   <tr key={index}>
                     <td>{loc.location}</td>
                     <td><BlueNumber>{loc.quantity}</BlueNumber></td>
