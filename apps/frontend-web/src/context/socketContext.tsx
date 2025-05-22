@@ -2,8 +2,11 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+
 import { API_URL } from '../lib/config';
 import { useAuth } from './AuthContext';
+=======
+
 
 interface SocketContextValue {
   socket: Socket | null;
@@ -20,9 +23,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const { user } = useAuth();
 
   useEffect(() => {
+
     const socketIo = io(API_URL, {
       query: { username: user?.username ?? '' },
     });
+=======
+    const socketIo = io(process.env.NEXT_PUBLIC_SOCKET_URL || '');
+
     socketIo.on('connect', () => {
       console.log('[SocketProvider] Conectado con ID:', socketIo.id);
     });
