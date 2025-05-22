@@ -13,6 +13,14 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuthService {
+
+  private readonly jwtSecret = 'your_jwt_secret';
+
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly prisma: PrismaClient,
+  ) {}
+=======
   private prisma = new PrismaClient();
   private readonly jwtSecret: string;
 
@@ -23,6 +31,7 @@ export class AuthService {
     }
     this.jwtSecret = secret;
   }
+
 
   async login(loginDto: LoginDto): Promise<{ token: string; user: any }> {
     const { username, password } = loginDto;
