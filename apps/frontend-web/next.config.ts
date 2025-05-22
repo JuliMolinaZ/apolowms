@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: "export",
+  output: 'export',
   images: {
     unoptimized: true, // Deshabilita la optimización de imágenes
   },
@@ -14,15 +14,15 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@mui/styled-engine": "@mui/styled-engine-sc",
+      '@mui/styled-engine': '@mui/styled-engine-sc',
     };
     return config;
   },
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:3000/:path*",
+        source: '/api/:path*',
+        destination: `${process.env.API_URL}/:path*`,
       },
     ];
   },
