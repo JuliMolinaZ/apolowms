@@ -5,7 +5,7 @@ import { UpdatePickingDto } from './dto/update-picking.dto';
 
 @Injectable()
 export class PickingService {
-  private prisma = new PrismaClient();
+  constructor(private readonly prisma: PrismaClient) {}
 
   async findAll() {
     // Retorna un array de registros; si no hay datos, retorna []

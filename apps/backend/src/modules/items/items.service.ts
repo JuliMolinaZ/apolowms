@@ -9,7 +9,7 @@ import { UpdateItemDto } from './dto/update-item.dto';
 
 @Injectable()
 export class ItemsService {
-  private prisma = new PrismaClient();
+  constructor(private readonly prisma: PrismaClient) {}
 
   async findAll() {
     return await this.prisma.item.findMany();
