@@ -1,0 +1,5 @@
+Para iniciar sesión en APOLOWARE por favor digita las siguentes credenciales:
+
+user: test
+password: 123
+

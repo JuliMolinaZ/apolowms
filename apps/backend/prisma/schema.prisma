@@ -1,0 +1,87 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+model User {
+  id           Int     @id @default(autoincrement())
+  username     String  @unique
+  email        String  @unique
+  password     String
+  role         String
+  phone        String?
+  profileImage String?
+  isOnline     Boolean  @default(false)
+
+  @@map("User")
+}
+
+model Picking {
+  id          Int      @id @default(autoincrement())
+  orderNumber String
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Slotting {
+  id          Int      @id @default(autoincrement())
+  location    String
+  product     String
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Packing {
+  id          Int      @id @default(autoincrement())
+  packageId   String   @unique
+  itemsCount  Int
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  description String?
+  capacity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Arrival {
+  id          Int      @id @default(autoincrement())
+  shipmentId  String   @unique
+  carrier     String?
+  arrivalDate DateTime
+  status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Putaway {
+  id          Int      @id @default(autoincrement())
+  receiptId   String   @unique
+  location    String
+  quantity    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Item {
+  id          Int      @id @default(autoincrement())
+  sku         String   @unique
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

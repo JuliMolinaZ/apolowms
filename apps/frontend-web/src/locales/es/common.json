@@ -1,0 +1,31 @@
+{
+  "welcome": "Hola {{name}}...",
+  "cards": {
+    "users": "Usuarios",
+    "picking": "Alistamiento",
+    "slotting": "Organización",
+    "dashboards": "Tableros",
+    "packing": "Embalaje",
+    "location": "Ubicación",
+    "arrivals": "Llegadas",
+    "putaway": "Almacenaje",
+    "items": "Artículos",
+    "audits": "Auditorías"
+  },
+  "sidebar": {
+    "Home": "Inicio",
+    "Users": "Usuarios",
+    "Picking": "Alistamiento",
+    "Slotting": "Organización",
+    "Dashboards": "Tableros",
+    "Packing": "Embalaje",
+    "Locations": "Ubicación",
+    "Arrivals": "Llegadas",
+    "Putaway": "Almacenaje",
+    "Items": "Artículos",
+    "Titan": "Titán",
+    "Chat": "Chat",
+    "Logout": "Cerrar sesión",
+    "Audits": "Auditorías"
+  }
+}

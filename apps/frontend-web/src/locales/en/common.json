@@ -1,0 +1,31 @@
+{
+  "welcome": "Hello {{name}}...",
+  "cards": {
+    "users": "Users",
+    "picking": "Picking",
+    "slotting": "Slotting",
+    "dashboards": "Dashboards",
+    "packing": "Packing",
+    "location": "Location",
+    "arrivals": "Arrivals",
+    "putaway": "Putaway",
+    "items": "Items",
+    "audits": "Audits"
+  },
+  "sidebar": {
+    "Home": "Home",
+    "Users": "Users",
+    "Picking": "Picking",
+    "Slotting": "Slotting",
+    "Dashboards": "Dashboards",
+    "Packing": "Packing",
+    "Locations": "Locations",
+    "Arrivals": "Arrivals",
+    "Putaway": "Putaway",
+    "Items": "Items",
+    "Titan": "Titan",
+    "Chat": "Chat",
+    "Logout": "Logout",
+    "Audits": "Audits"
+  }
+}

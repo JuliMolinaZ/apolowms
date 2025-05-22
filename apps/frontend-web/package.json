@@ -1,0 +1,94 @@
+{
+  "name": "frontend-web",
+  "version": "0.1.0",
+  "private": true,
+  "main": "electron-main.js",
+  "scripts": {
+    "dev": "NODE_OPTIONS='--inspect' next dev",
+    "build": "next build",
+    "export": "next export",
+    "start": "next start",
+    "electron-dev": "electron electron-main.js",
+    "electron-pack": "electron-builder --dir",
+    "electron-dist": "electron-builder"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.8",
+    "@mui/material": "^6.4.8",
+    "@mui/styled-engine-sc": "^6.4.3",
+    "@react-three/drei": "^10.0.5",
+    "@react-three/fiber": "^9.1.0",
+    "@reduxjs/toolkit": "^2.5.1",
+    "@visactor/react-vchart": "^1.13.6",
+    "@visactor/vchart": "^1.13.6",
+    "axios": "^1.7.9",
+    "babel-plugin-styled-components": "^2.1.4",
+    "d3-geo": "^3.1.1",
+    "d3-geo-projection": "^4.0.0",
+    "file-saver": "^2.0.5",
+    "gsap": "^3.12.7",
+    "i18next": "^25.0.1",
+    "i18next-browser-languagedetector": "^8.0.5",
+    "jotai": "^2.12.1",
+    "lucide-react": "^0.477.0",
+    "next": "^15.2.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^15.4.1",
+    "react-icons": "^5.5.0",
+    "react-is": "^18.2.0",
+    "react-redux": "^9.2.0",
+    "react-simple-maps": "2",
+    "react-toastify": "^11.0.5",
+    "react-tsparticles": "^2.12.2",
+    "react-zoom-pan-pinch": "^3.7.0",
+    "recharts": "^2.15.1",
+    "socket.io-client": "^4.8.1",
+    "styled-components": "^6.1.16",
+    "three": "^0.174.0",
+    "tsparticles": "^3.8.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "electron": "^25.2.0",
+    "electron-builder": "^24.6.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "ts-jest": "^29.2.6",
+    "typescript": "^5"
+  },
+  "resolutions": {
+    "@emotion/is-prop-valid": "^1.1.0"
+  },
+  "build": {
+    "appId": "com.miapp.electron",
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "files": [
+      "electron-main.js",
+      "out/**/*"
+    ],
+    "win": {
+      "icon": "build/icon.ico"
+    },
+    "mac": {
+      "icon": "build/icon.icns"
+    }
+  },
+  "description": "This is a Next.js + Electron project to generate desktop executables.",
+  "author": "",
+  "license": "ISC"
+}

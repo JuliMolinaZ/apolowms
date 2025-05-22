@@ -1,0 +1,6461 @@
+===== Extrayendo componentes de Frontend-Web (excluyendo módulos, configuraciones, layouts y tests) =====
+===== Archivo: src/app/auth/register/page.tsx =====
+"use client";
+
+import React, { useState } from "react";
+import { TextField, Button, Typography, Box } from "@mui/material";
+import styled, { keyframes, createGlobalStyle } from "styled-components";
+import { useDispatch } from "react-redux";
+import { registerUser } from "../../../store/slices/authSlice";
+import { AppDispatch } from "../../../store";
+import { useRouter } from "next/navigation";
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+`;
+
+const GlobalStyle = createGlobalStyle`
+  html, body, #__next {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+`;
+
+const BackgroundWrapper = styled.div`
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const FormContainer = styled.div`
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: ${fadeIn} 1s ease-out;
+  max-width: 400px;
+  width: 100%;
+`;
+
+const RegisterPage: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+    try {
+      await dispatch(registerUser({ username, email, password })).unwrap();
+      // Redirige a la ruta configurada (backend ya la tiene configurada)
+      router.push("/auth/login");
+    } catch (err: any) {
+      setError(err.message || "Error al registrarse");
+    }
+  };
+
+  return (
+    <>
+      <GlobalStyle />
+      <BackgroundWrapper>
+        <FormContainer>
+          <Box component="form" onSubmit={handleSubmit}>
+            <Typography
+              variant="h4"
+              align="center"
+              gutterBottom
+              sx={{ color: "#000" }}
+            >
+              Registro
+            </Typography>
+            <TextField
+              label="Usuario"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={username}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setUsername(e.target.value)
+              }
+              required
+            />
+            <TextField
+              label="Correo electrónico"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              type="email"
+              value={email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
+              required
+            />
+            <TextField
+              label="Contraseña"
+              type="password"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
+              required
+            />
+            <TextField
+              label="Confirmar Contraseña"
+              type="password"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={confirmPassword}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setConfirmPassword(e.target.value)
+              }
+              required
+            />
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ marginTop: 2 }}
+            >
+              Registrarse
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              fullWidth
+              sx={{ marginTop: 1 }}
+              onClick={() => alert("Registro con Google no implementado")}
+            >
+              Registrarse con Google
+            </Button>
+          </Box>
+        </FormContainer>
+      </BackgroundWrapper>
+    </>
+  );
+};
+
+export default RegisterPage;
+
+
+
+
+
+
+===== Archivo: src/app/auth/login/AuthPage.tsx =====
+"use client";
+import React from "react";
+import styled from "styled-components";
+import AuthFlipCard from "../../../components/Auth/AuthFlipCard";
+
+const PageContainer = styled.div`
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+`;
+
+const LogoContainer = styled.div`
+  /* Ocupa la mitad izquierda y centra el contenido */
+  position: absolute;
+  left: 0;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  transform: translateY(-50%);
+`;
+
+const FormContainer = styled.div`
+  /* El formulario se posiciona en la mitad derecha, un poco más arriba */
+  position: absolute;
+  left: 50%;
+  top: 45%; /* Ajusta este valor para elevar o bajar el formulario */
+  transform: translate(0, -50%);
+`;
+
+const AuthPage: React.FC = () => {
+  return (
+    <PageContainer>
+      <LogoContainer>
+      </LogoContainer>
+      <FormContainer>
+        <AuthFlipCard />
+      </FormContainer>
+    </PageContainer>
+  );
+};
+
+export default AuthPage;
+
+
+
+===== Archivo: src/app/auth/login/page.tsx =====
+"use client";
+
+import React, { useState } from "react";
+import styled from "styled-components";
+import { useRouter } from "next/navigation";
+
+// ============== AUTENTICACIÓN FALSA (Reemplaza con tu lógica real) ==============
+async function fakeLogin(username: string, password: string) {
+  // Demo: si username="test" y password="123", consideramos válido
+  if (username === "test" && password === "123") return true;
+  throw new Error("Usuario/contraseña inválidos");
+}
+async function fakeRegister(username: string, email: string, password: string) {
+  if (!username || !email || !password) throw new Error("Datos incompletos");
+  return true;
+}
+
+// ============== COMPONENTE PRINCIPAL ==============
+export default function LoginRegisterPage() {
+  const router = useRouter();
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  // ====== LOGIN STATE ======
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState("");
+
+  // ====== REGISTER STATE ======
+  const [regUsername, setRegUsername] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirm, setRegConfirm] = useState("");
+  const [regError, setRegError] = useState("");
+
+  // ====== HANDLERS ======
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    try {
+      await fakeLogin(loginUsername, loginPassword);
+      router.push("/dashboard"); // Ajusta la ruta de destino
+    } catch (err: any) {
+      setLoginError(err.message || "Error al iniciar sesión");
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegError("");
+    if (regPassword !== regConfirm) {
+      setRegError("Las contraseñas no coinciden");
+      return;
+    }
+    try {
+      await fakeRegister(regUsername, regEmail, regPassword);
+      // Éxito => volver a Login
+      setIsFlipped(false);
+    } catch (err: any) {
+      setRegError(err.message || "Error al registrarse");
+    }
+  };
+
+  return (
+    <PageWrapper>
+      {/* Texto APOLOWARE a la izquierda */}
+      <LeftContainer>APOLOWARE</LeftContainer>
+
+      {/* Burbujas de decoración a la derecha */}
+      <CircleContainer>
+        <Circle size={220} top="10%" left="40%" />
+        <Circle size={150} top="30%" left="70%" />
+        <Circle size={120} top="55%" left="50%" />
+        <Circle size={80} top="75%" left="65%" />
+      </CircleContainer>
+
+      {/* Flip Card (Login / Register) */}
+      <FlipContainer>
+        <FlipInner $isFlipped={isFlipped}>
+          {/* ============ CARA LOGIN ============ */}
+          <Side>
+            <CardShape>
+              <Title>Welcome!!</Title>
+              <Form onSubmit={handleLogin}>
+                {/* Username */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M3 14s-1 0-1-1 1-4 
+                      6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 
+                      3 0 1 0-3-3 3 3 0 0 0 
+                      3 3Z" />
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={loginUsername}
+                    onChange={(e) => setLoginUsername(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                {/* Password */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M8 4a3 3 0 0 
+                      0-3 3v1H4a2 2 0 0 
+                      0-2 2v3a2 2 0 0 
+                      0 2 2h8a2 2 0 0 
+                      0 2-2v-3a2 2 0 0 
+                      0-2-2h-1V7a3 3 
+                      0 0 0-3-3z" />
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                <CheckRow>
+                  <label>
+                    <Bullet
+                      type="radio"
+                      checked={rememberMe}
+                      onChange={() => setRememberMe(!rememberMe)}
+                    />
+                    <span>Remember me</span>
+                  </label>
+                  <span>Forgot password?</span>
+                </CheckRow>
+
+                {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
+
+                <PrimaryButton type="submit">Login</PrimaryButton>
+              </Form>
+
+              <SecondaryText>
+                Don’t have an account?
+                <span onClick={() => setIsFlipped(true)}>Sign Up</span>
+              </SecondaryText>
+
+              <OrText>Or with</OrText>
+              <SocialRow>
+                {/* Sin imágenes: "option1" y "option2" con texto visible */}
+                <SocialButton>option1</SocialButton>
+                <SocialButton>option2</SocialButton>
+              </SocialRow>
+            </CardShape>
+          </Side>
+
+          {/* ============ CARA REGISTER ============ */}
+          <Side style={{ transform: "rotateY(180deg)" }}>
+            <CardShape>
+              <Title>Sign Up</Title>
+              <Form onSubmit={handleRegister}>
+                {/* Username */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M3 14s-1 0-1-1 
+                      1-4 6-4 6 3 6 4-1 
+                      1-1 1H3Zm5-6a3 3 0 
+                      1 0-3-3 3 3 0 0 
+                      0 3 3Z" />
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={regUsername}
+                    onChange={(e) => setRegUsername(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                {/* Email */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M0 4a2 2 0 0 
+                      1 2-2h12a2 2 0 0 
+                      1 2 2v8a2 2 0 0 
+                      1-2 2H2a2 2 0 0 
+                      1-2-2V4zm2-.5a.5.5 
+                      0 0 0-.5.5v.217l6 
+                      3.6 6-3.6V4a.5.5 
+                      0 0 0-.5-.5H2zm12 
+                      2.383-5.28 3.168a.5.5 
+                      0 0 1-.44 0L3 
+                      5.883V12a.5.5 0 0 
+                      0 .5.5h9a.5.5 
+                      0 0 0 .5-.5V5.883z"/>
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="email"
+                    placeholder="Email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                {/* Password */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M8 4a3 3 0 0 
+                      0-3 3v1H4a2 2 0 0 
+                      0-2 2v3a2 2 0 0 
+                      0 2 2h8a2 2 0 0 
+                      0 2-2v-3a2 2 0 0 
+                      0-2-2h-1V7a3 3 
+                      0 0 0-3-3z" />
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                {/* Confirm */}
+                <InputGroup>
+                  <IconHolder>
+                    <svg width="16" height="16" fill="#999" viewBox="0 0 16 16">
+                      <path d="M8 4a3 3 0 0 
+                      0-3 3v1H4a2 2 0 0 
+                      0-2 2v3a2 2 0 0 
+                      0 2 2h8a2 2 0 0 
+                      0 2-2v-3a2 2 0 0 
+                      0-2-2h-1V7a3 3 
+                      0 0 0-3-3z" />
+                    </svg>
+                  </IconHolder>
+                  <Input
+                    type="password"
+                    placeholder="Confirm password"
+                    value={regConfirm}
+                    onChange={(e) => setRegConfirm(e.target.value)}
+                    required
+                  />
+                </InputGroup>
+
+                {regError && <ErrorMessage>{regError}</ErrorMessage>}
+
+                <ButtonsRow>
+                  <PrimaryButton type="submit">Sign Up</PrimaryButton>
+                  <SecondaryBtn
+                    type="button"
+                    onClick={() => setIsFlipped(false)}
+                  >
+                    Login
+                  </SecondaryBtn>
+                </ButtonsRow>
+              </Form>
+            </CardShape>
+          </Side>
+        </FlipInner>
+      </FlipContainer>
+
+    </PageWrapper>
+  );
+}
+
+/* ===================== ESTILOS GENERALES ===================== */
+
+// Contenedor principal
+const PageWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: #fff;
+  overflow: hidden;
+  font-family: sans-serif;
+`;
+
+// Texto APOLOWARE a la izquierda
+const LeftContainer = styled.div`
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+`;
+
+// Burbujas de decoración
+const CircleContainer = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  z-index: 1;
+`;
+
+interface CircleProps {
+  size: number;
+  top: string;
+  left: string;
+}
+
+const Circle = styled.div<CircleProps>`
+  position: absolute;
+  width: ${(p) => p.size}px;
+  height: ${(p) => p.size}px;
+  border-radius: 50%;
+  background: #d9ecff;
+  top: ${(p) => p.top};
+  left: ${(p) => p.left};
+  opacity: 0.8;
+`;
+
+// Contenedor para la tarjeta flip
+const FlipContainer = styled.div`
+  position: absolute;
+  right: 10%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 340px; /* Ajusta según tu diseño */
+  height: 480px; /* Ajusta según tu diseño */
+  perspective: 1000px;
+  z-index: 2;
+`;
+
+const FlipInner = styled.div<{ $isFlipped: boolean }>`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  transform-style: preserve-3d;
+  transform: ${(props) => (props.$isFlipped ? "rotateY(180deg)" : "none")};
+`;
+
+// Cada cara de la tarjeta
+const Side = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+`;
+
+// Forma del card
+const CardShape = styled.div`
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  background: #fff;
+  /* Curva en la esquina derecha superior/inferior */
+  border-radius: 0 50px 50px 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+`;
+
+const Title = styled.h2`
+  margin: 0 0 1rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const InputGroup = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const IconHolder = styled.span`
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #999;
+  display: flex;
+  align-items: center;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.6rem 0.6rem 0.6rem 2rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  color: #333; /* Texto visible */
+  &::placeholder {
+    color: #999; /* Placeholder gris */
+  }
+`;
+
+const Bullet = styled.input`
+  margin-right: 4px;
+`;
+
+const CheckRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #333;
+  margin: 0.5rem 0;
+
+  span {
+    cursor: pointer;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  font-size: 13px;
+  color: red;
+  margin-top: -4px;
+`;
+
+const PrimaryButton = styled.button`
+  padding: 0.6rem;
+  border: none;
+  border-radius: 20px;
+  background: #5ed7e8; /* Botón turquesa */
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const ButtonsRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const SecondaryBtn = styled.button`
+  flex: 1;
+  padding: 0.6rem;
+  border: 2px solid #5ed7e8;
+  border-radius: 20px;
+  background: transparent;
+  color: #5ed7e8;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    background: #e2fbfd;
+  }
+`;
+
+const SecondaryText = styled.div`
+  margin: 0.5rem 0;
+  font-size: 14px;
+  text-align: center;
+  color: #333;
+
+  span {
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+`;
+
+const OrText = styled.div`
+  text-align: center;
+  margin: 0.5rem 0;
+  font-size: 14px;
+  color: #666;
+`;
+
+const SocialRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const SocialButton = styled.button`
+  flex: 1;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333; /* Texto visible */
+  cursor: pointer;
+  &:hover {
+    background: #f2f2f2;
+  }
+`;
+
+// Footer opcional
+const Footer = styled.footer`
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+
+  a {
+    color: #333;
+    text-decoration: underline;
+    margin: 0 5px;
+  }
+`;
+
+
+
+===== Archivo: src/app/(protected)/putaway/page.tsx =====
+"use client";
+import React from "react";
+
+export default function PutawayPage() {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Módulo Putaway</h1>
+      <p>Esta es la demo del módulo de organización del putaway.</p>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/slotting/page.tsx =====
+"use client";
+import React from "react";
+
+export default function SlottingPage() {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Módulo Slotting</h1>
+      <p>Esta es la demo del módulo de organización del slotting.</p>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/chat/page.tsx =====
+"use client";
+import React, { useState } from "react";
+import styled from "styled-components";
+
+// ===== Mock de usuarios =====
+interface User {
+  id: number;
+  name: string;
+  isOnline: boolean;
+}
+
+// Ejemplo de usuarios (sin ruta de avatar)
+const mockUsers: User[] = [
+  {
+    id: 1,
+    name: "Julimz",
+    isOnline: true,
+  },
+  {
+    id: 2,
+    name: "Offline",
+    isOnline: false,
+  },
+  {
+    id: 3,
+    name: "UserX",
+    isOnline: true,
+  },
+];
+
+// ===== Mock de mensajes =====
+interface Message {
+  id: number;
+  userId: number; // Relaciona con 'User'
+  text: string;
+  time: string;   // "3:40 pm", etc.
+}
+
+const mockMessages: Message[] = [
+  {
+    id: 101,
+    userId: 1, // "Julimz"
+    text: "Hola, ¿en qué puedo ayudarte?",
+    time: "3:40 pm",
+  },
+];
+
+// ====================== Componente Principal ======================
+export default function ChatPage() {
+  // Usuario seleccionado en el panel izquierdo
+  const [selectedUser, setSelectedUser] = useState<User | null>(mockUsers[0]);
+  
+  // Estado del popover (mostrar/ocultar la “tarjeta” con opciones)
+  const [showProfileCard, setShowProfileCard] = useState(false);
+
+  // Mensaje que escribe el usuario en el input
+  const [inputMessage, setInputMessage] = useState("");
+
+  // Maneja la selección de usuario en el panel izquierdo
+  const handleSelectUser = (user: User) => {
+    setSelectedUser(user);
+    // Cerrar el popover si estaba abierto
+    setShowProfileCard(false);
+  };
+
+  // Maneja clic en el nombre (header) para mostrar/ocultar popover
+  const handleToggleProfileCard = () => {
+    setShowProfileCard((prev) => !prev);
+  };
+
+  // Maneja el envío de mensajes
+  const handleSendMessage = () => {
+    if (!inputMessage.trim()) return;
+    // Aquí podrías añadir lógica para enviar el mensaje vía socket, etc.
+    alert(`Mensaje enviado: ${inputMessage}`);
+    setInputMessage("");
+  };
+
+  // Maneja "Enter" para enviar
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  return (
+    <Container>
+      {/* Encabezado Superior con la palabra "Chat" y burbujas decorativas */}
+      <Header>
+        <HeaderTitle>Chat</HeaderTitle>
+        {/* Burbujas a la derecha (z-index -1) */}
+        <BubblesContainer>
+          <Bubble size={150} top="10%" right="5%" />
+          <Bubble size={100} top="35%" right="10%" />
+          <Bubble size={200} top="60%" right="2%" />
+          <Bubble size={60} top="80%" right="8%" />
+        </BubblesContainer>
+      </Header>
+
+      {/* Contenedor Principal: Panel de Usuarios + Panel de Chat */}
+      <MainContent>
+        {/* Panel Izquierdo: Lista de Usuarios */}
+        <LeftPanel>
+          <UsersTitle>Usuarios</UsersTitle>
+          <UsersList>
+            {mockUsers.map((user) => (
+              <UserItem
+                key={user.id}
+                onClick={() => handleSelectUser(user)}
+                $selected={selectedUser?.id === user.id}
+              >
+                <UserAvatar>
+                  {/* Si deseas mostrar la inicial, descomenta la línea de abajo */}
+                  {/* {user.name.charAt(0).toUpperCase()} */}
+                </UserAvatar>
+                <StatusDot $online={user.isOnline} />
+                <UserText>
+                  <UserName>{user.name}</UserName>
+                  <UserStatus>{user.isOnline ? "Online" : "Offline"}</UserStatus>
+                </UserText>
+              </UserItem>
+            ))}
+          </UsersList>
+        </LeftPanel>
+
+        {/* Panel Central de Chat */}
+        <ChatPanel>
+          {/* Header del chat con nombre + hora local */}
+          {selectedUser ? (
+            <>
+              <ChatHeader>
+                <UserHeader onClick={handleToggleProfileCard}>
+                  <HeaderAvatar>
+                    {/* Si deseas la inicial, descomenta la línea de abajo */}
+                    {/* {selectedUser.name.charAt(0).toUpperCase()} */}
+                  </HeaderAvatar>
+                  <HeaderInfo>
+                    <HeaderName>{selectedUser.name}</HeaderName>
+                    <HeaderTime>4:00 PM local time</HeaderTime>
+                  </HeaderInfo>
+                </UserHeader>
+                {/* Popover con opciones de “Message”, “Call”, “Video” */}
+                {showProfileCard && (
+                  <ProfileCard>
+                    <ProfileName>{selectedUser.name}</ProfileName>
+                    <ProfileRole>Operator</ProfileRole>
+                    <ProfileLocalTime>4:00 PM local time</ProfileLocalTime>
+                    <ProfileActions>
+                      <ProfileActionButton>Message</ProfileActionButton>
+                      <ProfileActionButton>📞</ProfileActionButton>
+                      <ProfileActionButton>🎥</ProfileActionButton>
+                    </ProfileActions>
+                  </ProfileCard>
+                )}
+              </ChatHeader>
+
+              {/* Área de mensajes */}
+              <MessagesArea>
+                {mockMessages
+                  .filter((m) => m.userId === selectedUser.id)
+                  .map((msg) => (
+                    <MessageRow key={msg.id}>
+                      <MsgAvatar>
+                        {/* Si deseas la inicial, descomenta la línea de abajo */}
+                        {/* {selectedUser.name.charAt(0).toUpperCase()} */}
+                      </MsgAvatar>
+                      <MsgBubble>
+                        <MsgUserName>{selectedUser.name}</MsgUserName>
+                        <MsgTime>{msg.time}</MsgTime>
+                        <MsgText>{msg.text}</MsgText>
+                      </MsgBubble>
+                    </MessageRow>
+                  ))}
+              </MessagesArea>
+
+              {/* Input para escribir mensaje */}
+              <MessageInputArea>
+                <InputField
+                  placeholder="Escribe un mensaje..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                />
+                <ReloadIcon>⟳</ReloadIcon>
+              </MessageInputArea>
+            </>
+          ) : (
+            <NoUserSelected>
+              <p>Selecciona un usuario para chatear</p>
+            </NoUserSelected>
+          )}
+        </ChatPanel>
+      </MainContent>
+    </Container>
+  );
+}
+
+// ====================== ESTILOS ======================
+
+// ----- Layout general -----
+const Container = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+`;
+
+// ----- Header superior con "Chat" + burbujas -----
+const Header = styled.div`
+  position: relative;
+  background-color: #f8f8f8;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #ddd;
+`;
+
+const HeaderTitle = styled.h2`
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+`;
+
+/* Burbujas decorativas a la derecha (z-index: -1) */
+const BubblesContainer = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+`;
+
+interface BubbleProps {
+  size: number;
+  top: string;
+  right: string;
+}
+
+const Bubble = styled.div<BubbleProps>`
+  position: absolute;
+  width: ${(props) => props.size}px;
+  height: ${(props) => props.size}px;
+  border-radius: 50%;
+  background: #b2daf0;
+  opacity: 0.8;
+  top: ${(props) => props.top};
+  right: ${(props) => props.right};
+`;
+
+// ----- Contenedor principal: Panel usuarios + Chat -----
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  min-height: 0; /* para que flex con overflow funcione */
+`;
+
+// ----- Panel Izquierdo (Usuarios) -----
+const LeftPanel = styled.div`
+  width: 250px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+`;
+
+const UsersTitle = styled.div`
+  padding: 1rem;
+  font-weight: 700;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+`;
+
+const UsersList = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const UserItem = styled.div<{ $selected?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  background-color: ${({ $selected }) => ($selected ? "#f2f2f2" : "transparent")};
+
+  &:hover {
+    background-color: #f2f2f2;
+  }
+`;
+
+/** Avatar sin imagen: simple círculo gris */
+const UserAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  background-color: #ccc; /* Color de fondo del círculo */
+  border-radius: 50%;
+  position: relative;
+
+  /* Para centrar texto (inicial) si lo deseas: 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #333;
+  */
+`;
+
+const StatusDot = styled.span<{ $online: boolean }>`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: ${(p) => (p.$online ? "#34c759" : "#bbb")};
+  border: 2px solid #fff;
+  border-radius: 50%;
+`;
+
+const UserText = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const UserName = styled.span`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const UserStatus = styled.span`
+  font-size: 0.8rem;
+  color: #666;
+`;
+
+// ----- Panel Central de Chat -----
+const ChatPanel = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+// Header del Chat (nombre usuario, etc.)
+const ChatHeader = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #ddd;
+`;
+
+// Nombre + avatar clickeable
+const UserHeader = styled.div`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+`;
+
+/** Avatar en el header sin imagen */
+const HeaderAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  background-color: #ccc; /* Color de fondo del círculo */
+  border-radius: 50%;
+  margin-right: 0.5rem;
+
+  /* Centrar texto (inicial) si lo deseas:
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #333;
+  */
+`;
+
+const HeaderInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const HeaderName = styled.span`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const HeaderTime = styled.span`
+  font-size: 0.8rem;
+  color: #666;
+`;
+
+// Popover con la tarjeta de perfil
+const ProfileCard = styled.div`
+  position: absolute;
+  top: 60px;
+  left: 1rem;
+  width: 200px;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.75rem;
+  z-index: 10;
+`;
+
+const ProfileName = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const ProfileRole = styled.div`
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+`;
+
+const ProfileLocalTime = styled.div`
+  font-size: 0.8rem;
+  color: #999;
+  margin-bottom: 0.75rem;
+`;
+
+const ProfileActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const ProfileActionButton = styled.button`
+  flex: 1;
+  background-color: #eee;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  &:hover {
+    background-color: #ddd;
+  }
+`;
+
+// Área de mensajes
+const MessagesArea = styled.div`
+  flex: 1;
+  background-color: #fafafa;
+  padding: 1rem;
+  overflow-y: auto;
+`;
+
+// Cada mensaje
+const MessageRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+/** Avatar en los mensajes sin imagen */
+const MsgAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  background-color: #ccc; /* Color de fondo del círculo */
+  border-radius: 50%;
+  margin-right: 0.75rem;
+
+  /* Centrar texto (inicial) si lo deseas:
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #333;
+  */
+`;
+
+const MsgBubble = styled.div`
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 60%;
+`;
+
+const MsgUserName = styled.span`
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-right: 0.5rem;
+`;
+
+const MsgTime = styled.span`
+  font-size: 0.8rem;
+  color: #999;
+`;
+
+const MsgText = styled.div`
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.4;
+`;
+
+// Input para escribir mensaje
+const MessageInputArea = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #f8f8f8;
+  border-top: 1px solid #ddd;
+`;
+
+const InputField = styled.input`
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 2rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #333;
+  &:focus {
+    outline: none;
+    border-color: #aaa;
+  }
+`;
+
+const ReloadIcon = styled.div`
+  margin-left: 1rem;
+  font-size: 1.2rem;
+  color: #666;
+  cursor: pointer;
+  &:hover {
+    color: #333;
+  }
+`;
+
+// Estado cuando no se ha seleccionado ningún usuario
+const NoUserSelected = styled.div`
+  flex: 1;
+  background-color: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  p {
+    color: #666;
+    font-size: 1rem;
+  }
+`;
+
+
+
+===== Archivo: src/app/(protected)/picking/page.tsx =====
+"use client";
+import React, { useEffect, useState } from "react";
+import styled, { createGlobalStyle } from "styled-components";
+
+// ===== Colores de ejemplo =====
+const backgroundColor = "#EAF5FA";   // Fondo general
+const cardBgColor = "#FFFFFF";       // Fondo de tarjetas y tabla
+const menuBgColor = "#FFFFFF";       // Fondo del submenú
+const hoverBgColor = "#f4f9fc";      // Hover en submenú y tabla
+const borderColor = "#d3e0e9";       // Bordes suaves
+const textColor = "#333";            // Color de texto principal
+const accentColor = "#5ce1e6";       // Botones y acentos
+
+// ===== Estilos globales =====
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${backgroundColor};
+    color: ${textColor};
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+`;
+
+// ===== Contenedor principal del módulo =====
+const ModuleContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  /* Reducimos el padding top para acercar el contenido al header */
+  padding: 0rem 1rem 1rem 1rem;
+  gap: 1rem;
+`;
+
+// ===== Submenú horizontal (más cerca del top) =====
+const ModuleNavBar = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: ${menuBgColor};
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid ${borderColor};
+  /* Minimiza margen top y bottom para acercarlo aún más */
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+`;
+
+const ModuleNavItem = styled.div<{ $active?: boolean }>`
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: ${({ $active }) => ($active ? "bold" : "normal")};
+  background-color: ${({ $active }) => ($active ? hoverBgColor : "transparent")};
+
+  &:hover {
+    background-color: ${hoverBgColor};
+  }
+`;
+
+// ===== Contenedor de tarjetas (2x2) =====
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+`;
+
+const DataCard = styled.div`
+  background-color: ${cardBgColor};
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+`;
+
+const CardTitle = styled.h3`
+  margin: 0;
+  font-size: 1rem;
+  color: ${textColor};
+`;
+
+const CardNumber = styled.div`
+  margin: 0.5rem 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: ${textColor};
+`;
+
+const CardInfo = styled.div`
+  font-size: 0.9rem;
+  color: #666;
+`;
+
+// ===== Botón de acción =====
+const ActionButton = styled.button`
+  background-color: ${accentColor};
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 0 0.25rem;
+
+  &:hover {
+    background-color: #54c6d6;
+  }
+`;
+
+// ===== Tabla de pickings =====
+const TableContainer = styled.div`
+  background-color: ${cardBgColor};
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const TableTitle = styled.h3`
+  margin-top: 0;
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+
+  th,
+  td {
+    border: 1px solid ${borderColor};
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background-color: ${hoverBgColor};
+  }
+
+  tbody tr:hover {
+    background-color: ${hoverBgColor};
+  }
+`;
+
+// ===== Formulario para crear un nuevo picking =====
+const CreateForm = styled.form`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  input {
+    padding: 0.5rem;
+    border: 1px solid ${borderColor};
+    border-radius: 6px;
+  }
+`;
+
+// ===== Interfaz para un Picking (puedes ajustarla a tus campos reales) =====
+interface Picking {
+  id: number;
+  orderNumber: string;
+  quantity: number;
+}
+
+export default function PickingPage() {
+  // ============= Lógica para las tarjetas (demo) ============
+  const pendingOrders = 54;
+  const pendingTime = "152 minutes per order";
+
+  const onHold = 10;
+  const onHoldTime = "58 minutes per order";
+
+  const inProcess = 123;
+  const inProcessTime = "120 minutes per order";
+
+  const onPallet = 12;
+  const onPalletTime = "23 minutes per order";
+
+  // ============= Lógica para la tabla de pickings ============
+  const [pickings, setPickings] = useState<Picking[]>([]);
+
+  // Estados para crear un nuevo picking
+  const [newOrderNumber, setNewOrderNumber] = useState("");
+  const [newQuantity, setNewQuantity] = useState<number>(0);
+
+  // Obtiene los pickings del backend
+  const fetchPickings = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/picking");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setPickings(data);
+      } else {
+        console.error("La respuesta no es un array:", data);
+        setPickings([]);
+      }
+    } catch (error) {
+      console.error("Error al obtener pickings:", error);
+    }
+  };
+
+  // Carga inicial de datos
+  useEffect(() => {
+    fetchPickings();
+  }, []);
+
+  // Crear un nuevo picking
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:3000/picking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderNumber: newOrderNumber,
+          quantity: newQuantity,
+        }),
+      });
+      if (!res.ok) {
+        console.error("Error al crear picking:", await res.text());
+      }
+      setNewOrderNumber("");
+      setNewQuantity(0);
+      fetchPickings(); // refresca la tabla
+    } catch (error) {
+      console.error("Error al crear picking:", error);
+    }
+  };
+
+  // Editar un picking (demo: aquí solo mostramos un log)
+  const handleEdit = (id: number) => {
+    console.log("Editar picking con id:", id);
+    // Podrías abrir un modal para editar o navegar a otra ruta
+  };
+
+  // Eliminar un picking
+  const handleDelete = async (id: number) => {
+    try {
+      const res = await fetch(`http://localhost:3000/picking/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        console.error("Error al eliminar picking:", await res.text());
+      }
+      fetchPickings(); // refresca la tabla
+    } catch (error) {
+      console.error("Error al eliminar picking:", error);
+    }
+  };
+
+  return (
+    <>
+      <GlobalStyle />
+
+      <ModuleContainer>
+        {/* Submenú horizontal al tope */}
+        <ModuleNavBar>
+          <ModuleNavItem $active>My Operators</ModuleNavItem>
+          <ModuleNavItem>Incidents</ModuleNavItem>
+          <ModuleNavItem>Returns</ModuleNavItem>
+          <ModuleNavItem>Reports & Updates</ModuleNavItem>
+          <ModuleNavItem>Handheld Devices</ModuleNavItem>
+        </ModuleNavBar>
+
+        {/* Grid de tarjetas (2x2) con métricas */}
+        <CardsGrid>
+          <DataCard>
+            <CardTitle>To Be Picked / Pending Fulfillment</CardTitle>
+            <CardNumber>{pendingOrders}</CardNumber>
+            <CardInfo>Average Order Processing Time</CardInfo>
+            <CardInfo>{pendingTime}</CardInfo>
+          </DataCard>
+
+          <DataCard>
+            <CardTitle>On Hold</CardTitle>
+            <CardNumber>{onHold}</CardNumber>
+            <CardInfo>Average Order Processing Time</CardInfo>
+            <CardInfo>{onHoldTime}</CardInfo>
+          </DataCard>
+
+          <DataCard>
+            <CardTitle>In Process / Processing</CardTitle>
+            <CardNumber>{inProcess}</CardNumber>
+            <CardInfo>Average Order Processing Time</CardInfo>
+            <CardInfo>{inProcessTime}</CardInfo>
+          </DataCard>
+
+          <DataCard>
+            <CardTitle>On Pallet / Palletized</CardTitle>
+            <CardNumber>{onPallet}</CardNumber>
+            <CardInfo>Average Order Processing Time</CardInfo>
+            <CardInfo>{onPalletTime}</CardInfo>
+          </DataCard>
+        </CardsGrid>
+
+        {/* Botón de acción */}
+        <ActionButton style={{ alignSelf: "flex-start" }}>
+          View warehouses
+        </ActionButton>
+
+        {/* Tabla con los pickings */}
+        <TableContainer>
+          <TableTitle>Pickings List</TableTitle>
+
+          {/* Formulario para crear un nuevo picking */}
+          <CreateForm onSubmit={handleCreate}>
+            <input
+              type="text"
+              placeholder="Order Number"
+              value={newOrderNumber}
+              onChange={(e) => setNewOrderNumber(e.target.value)}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={newQuantity}
+              onChange={(e) => setNewQuantity(Number(e.target.value))}
+              required
+            />
+            <ActionButton type="submit">Add</ActionButton>
+          </CreateForm>
+
+          <StyledTable>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Order Number</th>
+                <th>Quantity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pickings.map((p) => (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{p.orderNumber}</td>
+                  <td>{p.quantity}</td>
+                  <td>
+                    <ActionButton onClick={() => handleEdit(p.id)}>Edit</ActionButton>
+                    <ActionButton onClick={() => handleDelete(p.id)}>Delete</ActionButton>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </StyledTable>
+        </TableContainer>
+      </ModuleContainer>
+    </>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/dashboard/AsyncContent.tsx =====
+'use client';
+
+export default function AsyncContent() {
+  return <div>Contenido asíncrono cargado.</div>;
+}
+
+
+
+===== Archivo: src/app/(protected)/dashboard/page.tsx =====
+"use client";
+
+import React from "react";
+import styled from "styled-components";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+
+const Container = styled.div`
+  margin-top: 60px; /* Ajusta a la altura real de tu header */
+  padding: 2rem;
+  min-height: calc(100vh - 60px);
+  background-color: ${({ theme }) => theme.palette.background.default};
+  position: relative;
+`;
+
+/* Texto "Hola, Usuario..." */
+const WelcomeText = styled.h2`
+  font-size: 24px;
+  margin-bottom: 1.5rem;
+  color: ${({ theme }) => theme.palette.text.primary};
+`;
+
+/* Contenedor de burbujas en la esquina superior derecha */
+const BubblesContainer = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 300px;
+  pointer-events: none;
+  overflow: hidden;
+`;
+
+const Bubble = styled.div<{ size: number; top: string; left: string }>`
+  position: absolute;
+  width: ${(p) => p.size}px;
+  height: ${(p) => p.size}px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.palette.secondary.main}33;
+  top: ${(p) => p.top};
+  left: ${(p) => p.left};
+`;
+
+/* Grid: 3 filas × 3 columnas */
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 160px);
+  gap: 1rem;
+  margin-top: 2rem;
+`;
+
+/* Cada tarjeta */
+const Card = styled.div`
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s;
+  &:hover {
+    transform: translateY(-3px);
+  }
+`;
+
+/* Barra vertical en la esquina superior izquierda */
+const CardTopLeftBar = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 40px;
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  border-bottom-right-radius: 8px;
+`;
+
+/* Barra vertical en la esquina superior derecha */
+const CardTopRightBar = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 40px;
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  border-bottom-left-radius: 8px;
+`;
+
+/* Círculo para el ícono (arriba a la izquierda) */
+const IconPlaceholder = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  width: 36px;
+  height: 36px;
+  background-color: ${({ theme }) => theme.palette.primary.main}22;
+  border-radius: 50%;
+`;
+
+/* Contenedor principal interno de la tarjeta (centramos texto) */
+const CardContent = styled.div`
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+/* Título (Users, Picking, etc.) */
+const CardTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+`;
+
+/* Número (10, 27, etc.) */
+const CardNumber = styled.div`
+  font-size: 20px;
+  font-weight: bold;
+  color: ${({ theme }) => theme.palette.primary.main};
+`;
+
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Datos de ejemplo para las 9 tarjetas
+  const cards = [
+    { title: "Users", number: 10, route: "/users" },
+    { title: "Picking", number: 27, route: "/picking" },
+    { title: "Slotting", number: 35, route: "/slotting" },
+    { title: "Dashboards", number: 10, route: "/dashboards" },
+    { title: "Packing", number: 10, route: "/packing" },
+    { title: "Location", number: 10, route: "/locations" },
+    { title: "Arrivals", number: 10, route: "/arrivals" },
+    { title: "Putaway", number: 10, route: "/putaway" },
+    { title: "Items", number: 10, route: "/items" },
+  ];
+
+  const handleCardClick = (route: string) => {
+    router.push(route);
+  };
+
+  return (
+    <Container>
+      {/* Burbujas en la esquina superior derecha */}
+      <BubblesContainer>
+        <Bubble size={120} top="10%" left="50%" />
+        <Bubble size={80} top="40%" left="20%" />
+        <Bubble size={100} top="0%" left="0%" />
+      </BubblesContainer>
+
+      <WelcomeText>Hola {user?.username || "Usuario"}...</WelcomeText>
+
+      <CardsGrid>
+        {cards.map((c) => (
+          <Card key={c.title} onClick={() => handleCardClick(c.route)}>
+            {/* Dos barras verticales en esquinas superiores */}
+            <CardTopLeftBar />
+            <CardTopRightBar />
+            {/* Círculo para ícono */}
+            <IconPlaceholder />
+            {/* Contenido: título y número */}
+            <CardContent>
+              <CardTitle>{c.title}</CardTitle>
+              <CardNumber>{c.number}</CardNumber>
+            </CardContent>
+          </Card>
+        ))}
+      </CardsGrid>
+    </Container>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/dashboards/page.tsx =====
+// myorg/apps/frontend-web/src/app/(protected)/dashboards/page.tsx
+"use client";
+
+import React from "react";
+import styled from "styled-components";
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  BarChart,
+  Bar,
+  Legend,
+  PieChart,
+  Pie,
+  Cell
+} from "recharts";
+
+const PageContainer = styled.div`
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  min-height: calc(100vh - 130px); /* Considerando la altura del header u otros elementos */
+`;
+
+const Title = styled.h1`
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+`;
+
+const ChartSection = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+`;
+
+const ChartWrapper = styled.div`
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+`;
+
+const ChartTitle = styled.h3`
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #555;
+`;
+
+/* Datos de ejemplo para las gráficas */
+const lineData = [
+  { name: "Ene", value: 400 },
+  { name: "Feb", value: 300 },
+  { name: "Mar", value: 500 },
+  { name: "Abr", value: 200 },
+  { name: "May", value: 278 },
+  { name: "Jun", value: 189 },
+];
+
+const barData = [
+  { name: "Producto A", sales: 2400 },
+  { name: "Producto B", sales: 1398 },
+  { name: "Producto C", sales: 9800 },
+  { name: "Producto D", sales: 3908 },
+  { name: "Producto E", sales: 4800 },
+];
+
+const pieData = [
+  { name: "Grupo A", value: 400 },
+  { name: "Grupo B", value: 300 },
+  { name: "Grupo C", value: 300 },
+  { name: "Grupo D", value: 200 },
+];
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+const DashboardsPage: React.FC = () => {
+  return (
+    <PageContainer>
+      <Title>Dashboards</Title>
+      <ChartSection>
+        {/* Gráfica de Línea */}
+        <ChartWrapper>
+          <ChartTitle>Gráfica de Línea</ChartTitle>
+          <LineChart width={400} height={300} data={lineData}>
+            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+            <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+          </LineChart>
+        </ChartWrapper>
+
+        {/* Gráfica de Barras */}
+        <ChartWrapper>
+          <ChartTitle>Gráfica de Barras</ChartTitle>
+          <BarChart width={400} height={300} data={barData}>
+            <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="sales" fill="#82ca9d" />
+          </BarChart>
+        </ChartWrapper>
+
+        {/* Gráfica de Pastel */}
+        <ChartWrapper>
+          <ChartTitle>Gráfica de Pastel</ChartTitle>
+          <PieChart width={400} height={300}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ChartWrapper>
+      </ChartSection>
+    </PageContainer>
+  );
+};
+
+export default DashboardsPage;
+
+
+
+===== Archivo: src/app/(protected)/locations/page.tsx =====
+"use client";
+import React from "react";
+
+export default function LocationsPage() {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Módulo Locations</h1>
+      <p>Esta es la demo del módulo de gestión de ubicaciones.</p>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/users/page.tsx =====
+"use client";
+
+import React, { useEffect, useState } from "react";
+import styled from "styled-components";
+
+interface User {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+  phone?: string;
+  role: string;
+}
+
+// Datos de ejemplo. En tu caso, vendrán del fetch a tu API
+const mockUsers: User[] = [
+  {
+    id: "1",
+    name: "User001",
+    username: "User001",
+    email: "test@test.com",
+    phone: "3184553490",
+    role: "OPERATOR",
+  },
+  {
+    id: "2",
+    name: "User002",
+    username: "User002",
+    email: "user2@test.com",
+    phone: "3201234567",
+    role: "ADMIN",
+  },
+];
+
+const UsersPage: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Simulación de fetch. En tu caso, haz la llamada real:
+    setUsers(mockUsers);
+    // async function fetchUsers() {
+    //   try {
+    //     const res = await fetch("http://localhost:3000/users");
+    //     const data = await res.json();
+    //     if (Array.isArray(data)) {
+    //       setUsers(data);
+    //     } else if (Array.isArray(data.users)) {
+    //       setUsers(data.users);
+    //     }
+    //   } catch (err) {
+    //     console.error(err);
+    //   }
+    // }
+    // fetchUsers();
+  }, []);
+
+  const totalUsers = users.length;
+
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+  };
+
+  const handleDelete = (user: User) => {
+    console.log("Eliminar usuario:", user.id);
+    // Aquí tu lógica para eliminar
+  };
+
+  const handleCloseEdit = () => {
+    setEditingUser(null);
+  };
+
+  return (
+    <PageContainer>
+      {/* Encabezado: círculo + "Users {n}" */}
+      <HeaderWrapper>
+        <GreenCircle />
+        <HeaderText>
+          Users <span>{totalUsers}</span>
+        </HeaderText>
+      </HeaderWrapper>
+
+      {/* Burbujas a la derecha (opcionales) */}
+      <BubblesContainer>
+        <Bubble size={150} top="10%" right="5%" />
+        <Bubble size={100} top="35%" right="10%" />
+        <Bubble size={200} top="60%" right="2%" />
+        <Bubble size={60} top="80%" right="8%" />
+      </BubblesContainer>
+
+      {/* Ícono con badge en esquina inferior derecha (opcional) */}
+      <BoxIconContainer>
+        <BoxPlaceholder>Box</BoxPlaceholder>
+        <NotificationBadge>2</NotificationBadge>
+      </BoxIconContainer>
+
+      {/* Si estamos editando un usuario, muestra el formulario */}
+      {editingUser ? (
+        <EditUserView user={editingUser} onClose={handleCloseEdit} />
+      ) : (
+        /* Si NO, muestra las cartas de usuarios */
+        <CardsContainer>
+          {users.map((user) => (
+            <UserCard key={user.id}>
+              {/* Sección izquierda: Avatar + info (Nombre, @username, email) */}
+              <LeftSection>
+                <AvatarCircle>
+                  <span>i</span>
+                </AvatarCircle>
+                <UserText>
+                  <UserName>{user.name}</UserName>
+                  <UserUsername>@{user.username}</UserUsername>
+                  <UserEmail>{user.email}</UserEmail>
+                </UserText>
+              </LeftSection>
+
+              {/* Sección derecha: Rol, Teléfono y Botones */}
+              <RightSection>
+                <RolePhone>
+                  <UserRole>{user.role}</UserRole>
+                  {user.phone && <UserPhone>{user.phone}</UserPhone>}
+                </RolePhone>
+                <ButtonsContainer>
+                  <EditButton onClick={() => handleEdit(user)}>Editar</EditButton>
+                  <DeleteButton onClick={() => handleDelete(user)}>Eliminar</DeleteButton>
+                </ButtonsContainer>
+              </RightSection>
+            </UserCard>
+          ))}
+        </CardsContainer>
+      )}
+    </PageContainer>
+  );
+};
+
+export default UsersPage;
+
+/* ========================= Vista de Edición ========================= */
+interface EditUserViewProps {
+  user: User;
+  onClose: () => void;
+}
+
+const EditUserView: React.FC<EditUserViewProps> = ({ user, onClose }) => {
+  const [name, setName] = useState(user.name);
+  const [username, setUsername] = useState(user.username);
+  const [phone, setPhone] = useState(user.phone || "");
+  const [role, setRole] = useState(user.role);
+
+  const handleSave = () => {
+    console.log("Guardando cambios...", { name, username, phone, role });
+    // Lógica para actualizar
+    onClose();
+  };
+
+  return (
+    <EditContainer>
+      {/* Formulario (columna izquierda) */}
+      <EditForm>
+        <FormTitle>Editar perfil</FormTitle>
+        <UserHandle>@{username}</UserHandle>
+
+        <FieldLabel>Name</FieldLabel>
+        <FieldInput
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <FieldLabel>Username</FieldLabel>
+        <FieldInput
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+
+        <FieldLabel>Teléfono</FieldLabel>
+        <FieldInput
+          type="text"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <FieldLabel>Rol</FieldLabel>
+        <FieldInput
+          type="text"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        />
+
+        <SaveButton onClick={handleSave}>Guardar</SaveButton>
+      </EditForm>
+
+      {/* Tarjeta de vista previa (columna derecha) */}
+      <PreviewCard>
+        <PreviewImage>
+          <span>i</span>
+        </PreviewImage>
+
+        <PreviewData>
+          <PreviewLabel>Name</PreviewLabel>
+          <PreviewValue>{name}</PreviewValue>
+
+          <PreviewLabel>Username</PreviewLabel>
+          <PreviewValue>{username}</PreviewValue>
+
+          <PreviewLabel>Teléfono</PreviewLabel>
+          <PreviewValue>{phone}</PreviewValue>
+
+          <PreviewLabel>Rol</PreviewLabel>
+          <PreviewValue>{role}</PreviewValue>
+        </PreviewData>
+      </PreviewCard>
+    </EditContainer>
+  );
+};
+
+/* ======================== Estilos Generales ======================== */
+const PageContainer = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff;
+  z-index: 1;
+`;
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem;
+`;
+
+const GreenCircle = styled.div`
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #a1f3c3, #4bbf73);
+  border-radius: 50%;
+`;
+
+const HeaderText = styled.h2`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+
+  span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #666;
+    margin-left: 0.5rem;
+  }
+`;
+
+/* Burbujas decorativas a la derecha (opcionales) */
+const BubblesContainer = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+`;
+
+interface BubbleProps {
+  size: number;
+  top: string;
+  right: string;
+}
+
+const Bubble = styled.div<BubbleProps>`
+  position: absolute;
+  width: ${(props) => props.size}px;
+  height: ${(props) => props.size}px;
+  border-radius: 50%;
+  background: #b2daf0;
+  opacity: 0.8;
+  top: ${(props) => props.top};
+  right: ${(props) => props.right};
+`;
+
+/* Ícono con badge en esquina inferior derecha (opcional) */
+const BoxIconContainer = styled.div`
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  z-index: 100;
+`;
+
+const BoxPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: #cccccc;
+  border-radius: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const NotificationBadge = styled.div`
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #f00;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+/* ===================== Cartas de Usuarios ===================== */
+const CardsContainer = styled.div`
+  width: 90%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+/* Cada tarjeta (píldora grande) */
+const UserCard = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 2rem; /* “Píldora” */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem 2rem;
+  gap: 1rem;
+`;
+
+/* Sección izquierda: Avatar + (Name, @username, email) */
+const LeftSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+/* Avatar circular con la “i” */
+const AvatarCircle = styled.div`
+  width: 50px;
+  height: 50px;
+  background-color: #ccc;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+`;
+
+const UserText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+`;
+
+const UserName = styled.div`
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+`;
+
+const UserUsername = styled.div`
+  font-size: 0.9rem;
+  color: #555;
+`;
+
+const UserEmail = styled.div`
+  font-size: 0.9rem;
+  color: #555;
+`;
+
+/* Sección derecha: rol, teléfono y botones */
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* Espacio entre rol/teléfono y botones */
+`;
+
+/* Rol y teléfono juntos */
+const RolePhone = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+`;
+
+const UserRole = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+`;
+
+const UserPhone = styled.div`
+  font-size: 0.9rem;
+  color: #333;
+`;
+
+/* Botones Editar / Eliminar */
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const EditButton = styled.button`
+  background-color: #2e67f8;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #e85b5b;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #d14242;
+  }
+`;
+
+/* ===================== Vista de Edición ===================== */
+const EditContainer = styled.div`
+  width: 90%;
+  max-width: 1200px;
+  margin: 4rem auto 3rem auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 3rem;
+`;
+
+const EditForm = styled.div`
+  flex: 1;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const FormTitle = styled.h2`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.2rem;
+`;
+
+const UserHandle = styled.span`
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 2rem;
+  display: inline-block;
+`;
+
+const FieldLabel = styled.label`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.3rem;
+`;
+
+const FieldInput = styled.input`
+  border: none;
+  border-bottom: 1px solid #ccc;
+  padding: 0.4rem 0;
+  margin-bottom: 1.2rem;
+  font-size: 1rem;
+  color: #333;
+
+  &:focus {
+    outline: none;
+    border-bottom: 2px solid #333;
+  }
+`;
+
+const SaveButton = styled.button`
+  width: fit-content;
+  background-color: #2e67f8;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+const PreviewCard = styled.div`
+  flex: 1;
+  max-width: 450px;
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  align-self: flex-start;
+`;
+
+const PreviewImage = styled.div`
+  width: 100px;
+  height: 100px;
+  background-color: #cccccc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem auto;
+
+  span {
+    color: #333;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+`;
+
+const PreviewData = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const PreviewLabel = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const PreviewValue = styled.div`
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+`;
+
+
+
+===== Archivo: src/app/(protected)/titan/page.tsx =====
+"use client";
+import React, { useState } from "react";
+import styled from "styled-components";
+
+// ====================== DATOS MOCK (Preguntas / Respuestas) ======================
+
+// Preguntas en el panel izquierdo
+const leftPanelQuestions = [
+  {
+    category: "Inventario",
+    questions: [
+      "¿Cuál es el valor total de todos los productos?",
+      "¿Cuántos productos hay en total?",
+      "¿Cuántas unidades hay en total?",
+    ],
+  },
+  {
+    category: "Stock",
+    questions: [
+      "¿Cuál es el producto con más stock?",
+      "¿Cuál es el producto con menos stock?",
+    ],
+  },
+  {
+    category: "Precios",
+    questions: [
+      "¿Cuál es el producto con mayor precio?",
+      "¿Cuál es el producto con menor precio?",
+    ],
+  },
+  {
+    category: "Valoración",
+    questions: ["¿Cuál es el producto más valioso del inventario?"],
+  },
+];
+
+// Respuestas por defecto según la pregunta (ficticias)
+const defaultAnswers: Record<string, string> = {
+  // Inventario
+  "¿Cuál es el valor total de todos los productos?":
+    "El valor total estimado de todos los productos es de $9,999.",
+  "¿Cuántos productos hay en total?":
+    "Actualmente hay 8 productos en inventario.",
+  "¿Cuántas unidades hay en total?":
+    "El total de unidades en stock es 127.",
+
+  // Stock
+  "¿Cuál es el producto con más stock?":
+    "El producto con más stock es 'Producto A' con 60 unidades.",
+  "¿Cuál es el producto con menos stock?":
+    "El producto con menos stock es 'Producto B' con 3 unidades.",
+
+  // Precios
+  "¿Cuál es el producto con mayor precio?":
+    "El producto con mayor precio es 'Producto Premium' a $499.99.",
+  "¿Cuál es el producto con menor precio?":
+    "El producto con menor precio es 'Producto Económico' a $9.99.",
+
+  // Valoración
+  "¿Cuál es el producto más valioso del inventario?":
+    "El producto más valioso es 'Producto VIP', valorado en $999.",
+
+  // Opcionales (para saludar/despedir)
+  "Hola": "¡Hola! ¿En qué puedo ayudarte?",
+  "Adiós": "¡Hasta luego!",
+};
+
+// ====================== TIPADO PARA MENSAJES ======================
+interface Message {
+  sender: "user" | "bot";
+  text: string;
+}
+
+// ====================== COMPONENTE PRINCIPAL ======================
+export default function TitanPage() {
+  // Estado con la conversación
+  const [messages, setMessages] = useState<Message[]>([
+    { sender: "bot", text: "Hola, ¿en qué puedo ayudarte?" },
+  ]);
+
+  // Estado para el input de texto
+  const [input, setInput] = useState("");
+
+  // Maneja el envío de un mensaje
+  const handleSend = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    // Agrega el mensaje del usuario
+    const userMsg: Message = { sender: "user", text: trimmed };
+    setMessages((prev) => [...prev, userMsg]);
+
+    // Busca respuesta en defaultAnswers
+    let botReply = "No tengo una respuesta para esa pregunta, lo siento.";
+    if (defaultAnswers[trimmed]) {
+      botReply = defaultAnswers[trimmed];
+    }
+
+    // Agrega el mensaje del bot
+    const botMsg: Message = { sender: "bot", text: botReply };
+    setMessages((prev) => [...prev, botMsg]);
+
+    // Limpia el input
+    setInput("");
+  };
+
+  // Maneja "Enter" para enviar
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  // Al hacer clic en una pregunta del panel izquierdo
+  const handleQuestionClick = (question: string) => {
+    setInput(question);
+  };
+
+  return (
+    <Container>
+      {/* Encabezado superior con logo TITAN */}
+      <Header>
+        <Logo>TITAN</Logo>
+        {/* Burbuja verde (decorativa) detrás del texto */}
+        <BubbleContainer>
+          <Bubble />
+        </BubbleContainer>
+      </Header>
+
+      {/* Contenedor principal: panel izquierdo + chat */}
+      <MainContent>
+        {/* Panel Izquierdo */}
+        <LeftPanel>
+          {leftPanelQuestions.map((block, idx) => (
+            <CategoryBox key={idx}>
+              <CategoryTitle>{block.category}</CategoryTitle>
+              {block.questions.map((q, i) => (
+                <QuestionItem key={i} onClick={() => handleQuestionClick(q)}>
+                  {q}
+                </QuestionItem>
+              ))}
+            </CategoryBox>
+          ))}
+        </LeftPanel>
+
+        {/* Chat a la derecha */}
+        <ChatContainer>
+          <MessagesContainer>
+            {messages.map((msg, index) => (
+              <MessageRow key={index} $isUser={msg.sender === "user"}>
+                <MessageBubble $isUser={msg.sender === "user"}>
+                  {msg.text}
+                </MessageBubble>
+              </MessageRow>
+            ))}
+          </MessagesContainer>
+
+          <InputRow>
+            <MessageInput
+              placeholder="Escribe un mensaje..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <SendButton onClick={handleSend}>Enviar</SendButton>
+          </InputRow>
+        </ChatContainer>
+      </MainContent>
+    </Container>
+  );
+}
+
+// ====================== ESTILOS ======================
+
+// Contenedor principal (fondo claro, ocupa toda la pantalla)
+const Container = styled.div`
+  width: 100%;
+  height: 100vh;
+  background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+`;
+
+/* -------- Header con el logo TITAN -------- */
+const Header = styled.header`
+  position: relative;
+  height: 60px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  /* Aseguramos que el texto quede por encima de la burbuja */
+  z-index: 1;
+`;
+
+const Logo = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  position: relative;
+  z-index: 2; /* Más alto que la burbuja */
+`;
+
+/* -------- Burbuja verde decorativa en el header -------- */
+const BubbleContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 60px;
+  width: 60px;
+  overflow: visible;
+  z-index: 1; /* Detrás del logo */
+`;
+
+const Bubble = styled.div`
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a1f3c3, #4bbf73);
+  opacity: 0.7;
+  z-index: -1; /* Aún más atrás */
+`;
+
+/* -------- Contenido principal: panel izq + chat -------- */
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+`;
+
+/* Panel izquierdo con categorías/preguntas */
+const LeftPanel = styled.div`
+  width: 300px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  padding: 1rem;
+  overflow-y: auto;
+`;
+
+const CategoryBox = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const CategoryTitle = styled.h2`
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+`;
+
+const QuestionItem = styled.div`
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e6e6e6;
+  }
+`;
+
+/* -------- Sección de chat a la derecha -------- */
+const ChatContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f0f0f0;
+`;
+
+// Área que contiene los mensajes
+const MessagesContainer = styled.div`
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+// Cada fila de mensaje (para alinear derecha o izquierda)
+// Usamos $isUser en vez de isUser para que no aparezca en el DOM
+interface MessageRowProps {
+  $isUser: boolean;
+}
+const MessageRow = styled.div<MessageRowProps>`
+  display: flex;
+  justify-content: ${(p) => (p.$isUser ? "flex-end" : "flex-start")};
+`;
+
+// Burbuja de mensaje
+interface MessageBubbleProps {
+  $isUser: boolean;
+}
+const MessageBubble = styled.div<MessageBubbleProps>`
+  max-width: 60%;
+  background-color: ${(p) => (p.$isUser ? "#d7ebff" : "#ffffff")};
+  color: #333;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+`;
+
+// Input y botón en la parte inferior
+const InputRow = styled.div`
+  display: flex;
+  padding: 0.5rem;
+  gap: 0.5rem;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+`;
+
+const MessageInput = styled.input`
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  background-color: #fff; /* Fondo blanco para mayor contraste */
+  color: #333;           /* Texto oscuro */
+  
+  &::placeholder {
+    color: #999;        /* Ajusta el placeholder a un gris más oscuro */
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #999;
+  }
+`;
+
+
+const SendButton = styled.button`
+  background-color: #2e67f8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+
+
+===== Archivo: src/app/(protected)/items/page.tsx =====
+"use client";
+import React, { useState } from "react";
+import styled from "styled-components";
+
+// =============== Datos de ejemplo ===============
+interface Item {
+  id: number;
+  name: string;
+  price: string;
+  stock: number;
+  sku: string;
+  description: string;
+}
+
+const mockItems: Item[] = [
+  {
+    id: 1,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 2,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 3,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 4,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 5,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 6,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 7,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+  {
+    id: 8,
+    name: "Nombre del producto",
+    price: "$99.99",
+    stock: 70,
+    sku: "TIBS8934053405340950",
+    description: "Descripción del producto",
+  },
+];
+
+// =============== Componente Principal ===============
+export default function ItemsPage() {
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+
+  const totalItems = mockItems.length;
+
+  // Al hacer clic en “Editar”, se muestra la vista de detalle
+  const handleEdit = (item: Item) => {
+    setEditingItem(item);
+  };
+
+  // Para cerrar la vista de detalle y volver al grid
+  const handleCloseEdit = () => {
+    setEditingItem(null);
+  };
+
+  return (
+    <PageContainer>
+      {/* Encabezado: círculo verde + "Items {n}" */}
+      <HeaderWrapper>
+        <GreenCircle />
+        <HeaderText>
+          Items <span>{totalItems}</span>
+        </HeaderText>
+      </HeaderWrapper>
+
+      {/* Burbujas decorativas a la derecha (con z-index en -1) */}
+      <BubblesContainer>
+        <Bubble size={150} top="10%" right="5%" />
+        <Bubble size={100} top="35%" right="10%" />
+        <Bubble size={200} top="60%" right="2%" />
+        <Bubble size={60} top="80%" right="8%" />
+      </BubblesContainer>
+
+      {/* Ícono con “badge” en esquina inferior derecha (opcional) */}
+      <BoxIconContainer>
+        <BoxPlaceholder>Box</BoxPlaceholder>
+        <NotificationBadge>?</NotificationBadge>
+      </BoxIconContainer>
+
+      {/* Si hay un item en edición, mostrar la vista de detalle. Si no, el grid */}
+      {editingItem ? (
+        <EditItemView item={editingItem} onClose={handleCloseEdit} />
+      ) : (
+        <CardsContainer>
+          {mockItems.map((item) => (
+            <ItemCard key={item.id}>
+              {/* Espacio para la imagen (sin texto ni ícono) */}
+              <ItemImage />
+
+              {/* Nombre y Precio */}
+              <ProductName>{item.name}</ProductName>
+              <ProductPrice>{item.price}</ProductPrice>
+
+              {/* Botón de “Editar” */}
+              <MoreInfoButton onClick={() => handleEdit(item)}>
+                Editar
+              </MoreInfoButton>
+            </ItemCard>
+          ))}
+        </CardsContainer>
+      )}
+    </PageContainer>
+  );
+}
+
+// =============== Vista de Detalle (segundo frame) ===============
+interface EditItemViewProps {
+  item: Item;
+  onClose: () => void;
+}
+
+const EditItemView: React.FC<EditItemViewProps> = ({ item, onClose }) => {
+  return (
+    <DetailContainer>
+      {/* Columna Izquierda con placeholders “text” */}
+      <LeftColumn>
+        <PlaceholderBox>text</PlaceholderBox>
+        <PlaceholderBox>text</PlaceholderBox>
+        <PlaceholderBox>text</PlaceholderBox>
+        <PlaceholderBox>text</PlaceholderBox>
+      </LeftColumn>
+
+      {/* Tarjeta grande con la info del Item */}
+      <MainCard>
+        {/* Imagen de caja en la parte superior */}
+        <BoxImage>
+        </BoxImage>
+
+        {/* Fila con Precio, Nombre del producto y Stock */}
+        <Row>
+          <Price>{item.price}</Price>
+          <ProductTitle>{item.name}</ProductTitle>
+          <StockInfo>Stock {item.stock}</StockInfo>
+        </Row>
+
+        {/* Texto secundario */}
+        <SecondaryText>Aquí va más información</SecondaryText>
+
+        {/* Más detalles: SKU, Descripción, etc. */}
+        <InfoRow>
+          <InfoLabel>Item SKU</InfoLabel>
+          <InfoValue>{item.sku}</InfoValue>
+        </InfoRow>
+
+        <InfoRow>
+          <InfoLabel>Descripción</InfoLabel>
+          <InfoValue>{item.description}</InfoValue>
+        </InfoRow>
+
+        {/* Barra gris con el “barcode” (placeholder) */}
+        <BarcodePlaceholder />
+
+        {/* Botón para volver (si lo deseas) */}
+        <CloseButton onClick={onClose}>Volver</CloseButton>
+      </MainCard>
+
+      {/* Flecha a la derecha */}
+      <RightArrow>&gt;</RightArrow>
+
+      {/* Burbuja de chat en la esquina inferior derecha (opcional) */}
+      <ChatBubble>💬</ChatBubble>
+    </DetailContainer>
+  );
+};
+
+// =============== Estilos Generales ===============
+
+// Contenedor principal (posición relativa y z-index para que las burbujas queden detrás)
+const PageContainer = styled.div`
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #fff;
+  padding: 2rem;
+  box-sizing: border-box;
+`;
+
+/* ----- Encabezado “Items {n}” con círculo verde ----- */
+const HeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const GreenCircle = styled.div`
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #a1f3c3, #4bbf73);
+  border-radius: 50%;
+`;
+
+const HeaderText = styled.h2`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+
+  span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #666;
+    margin-left: 0.5rem;
+  }
+`;
+
+/* ----- Burbujas decorativas con z-index -1 para que queden detrás ----- */
+const BubblesContainer = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  z-index: -1; /* importante */
+  overflow: hidden;
+`;
+
+interface BubbleProps {
+  size: number;
+  top: string;
+  right: string;
+}
+
+const Bubble = styled.div<BubbleProps>`
+  position: absolute;
+  width: ${(props) => props.size}px;
+  height: ${(props) => props.size}px;
+  border-radius: 50%;
+  background: #b2daf0;
+  opacity: 0.8;
+  top: ${(props) => props.top};
+  right: ${(props) => props.right};
+`;
+
+/* ----- Ícono con badge en esquina inferior derecha (opcional) ----- */
+const BoxIconContainer = styled.div`
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+`;
+
+const BoxPlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  background-color: #cccccc;
+  border-radius: 0.5rem;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const NotificationBadge = styled.div`
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #f00;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+/* ----- Grid de Tarjetas de Items (cuando NO se está editando) ----- */
+const CardsContainer = styled.div`
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1.5rem;
+`;
+
+const ItemCard = styled.div`
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+`;
+
+// Espacio para la imagen (sin texto ni ícono)
+const ItemImage = styled.div`
+  width: 100px;
+  height: 100px;
+  background-color: #eeeeee;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+`;
+
+const ProductName = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const ProductPrice = styled.div`
+  font-size: 0.9rem;
+  color: #555;
+`;
+
+const MoreInfoButton = styled.button`
+  background-color: #2e67f8;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+/* ----- Vista de Detalle (segundo frame) ----- */
+const DetailContainer = styled.div`
+  display: grid;
+  grid-template-columns: 200px 1fr 40px;
+  gap: 1rem;
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 6rem); /* Ajusta según tu layout */
+`;
+
+const LeftColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const PlaceholderBox = styled.div`
+  height: 60px;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 0.9rem;
+  font-weight: 500;
+`;
+
+// Tarjeta principal con la info del item
+const MainCard = styled.div`
+  background-color: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+`;
+
+// Imagen de caja grande
+const BoxImage = styled.div`
+  width: 100%;
+  height: 200px;
+  background-color: #eeeeee;
+  border-radius: 0.5rem;
+`;
+
+// Fila con Precio, Nombre, Stock
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const Price = styled.div`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+`;
+
+const ProductTitle = styled.div`
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const StockInfo = styled.div`
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+`;
+
+// Texto secundario
+const SecondaryText = styled.div`
+  font-size: 0.95rem;
+  color: #333;
+`;
+
+// Filas de info (SKU, Descripción, etc.)
+const InfoRow = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+`;
+
+const InfoLabel = styled.div`
+  font-weight: 600;
+  color: #333;
+  width: 100px; /* ancho fijo para la etiqueta */
+`;
+
+const InfoValue = styled.div`
+  font-weight: 400;
+  color: #555;
+  flex: 1;
+`;
+
+// Placeholder para el “barcode”
+const BarcodePlaceholder = styled.div`
+  width: 100%;
+  height: 50px;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+`;
+
+// Botón para cerrar la vista de detalle
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  background-color: #e85b5b;
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &:hover {
+    background-color: #d14242;
+  }
+`;
+
+// Flecha a la derecha (opcional)
+const RightArrow = styled.div`
+  font-size: 2rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+// Burbuja de chat (opcional)
+const ChatBubble = styled.div`
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+`;
+
+
+
+===== Archivo: src/app/(protected)/arrivals/page.tsx =====
+"use client";
+import React from "react";
+
+export default function ArrivalsPage() {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Módulo Arrivals</h1>
+      <p>Esta es la demo del módulo de control de arrivals.</p>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/app/(protected)/packing/page.tsx =====
+"use client";
+import React from "react";
+
+export default function PackingPage() {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>Módulo Packing</h1>
+      <p>Esta es la demo del módulo de coordinación de packing.</p>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/app/loading.tsx =====
+// src/app/loading.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Loading from '@/components/Loading/Loading';
+
+export default function LoadingFallback({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+    // Duración del splash: 10 segundos (ajustable)
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!mounted || showSplash) {
+    return <Loading />;
+  }
+
+  return <>{children}</>;
+}
+
+
+
+===== Archivo: src/app/ClientSplash.tsx =====
+'use client';
+
+import React, { useState, useEffect } from "react";
+import Loading from "@/components/Loading/Loading";
+
+export default function ClientSplash({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 1000); // Ajusta el tiempo del splash según lo necesites
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!mounted || showSplash) {
+    return <Loading />;
+  }
+
+  return <>{children}</>;
+}
+
+
+
+===== Archivo: src/components/Sidebar/Sidebar.tsx =====
+"use client";
+
+import React from "react";
+import { Drawer, ListItemButton, ListItemText, Button, Box } from "@mui/material";
+import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useRouter } from "next/navigation";
+import { sidebarItems } from "@/config/sidebarItems";
+
+const headerHeight = 60;
+
+export interface SidebarProps {
+  open: boolean;
+  onLogout: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
+  const router = useRouter();
+
+  const handleNavigate = (label: string) => {
+    if (label.toLowerCase() === "home") {
+      router.push("/dashboard");
+    } else {
+      router.push(`/${label.toLowerCase()}`);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    onLogout();
+    router.push("/auth/login");
+  };
+
+  return (
+    <Drawer
+      variant="persistent"
+      open={open}
+      sx={{
+        width: open ? 200 : 0,
+        flexShrink: 0,
+        "& .MuiDrawer-paper": (theme: any) => ({
+          width: open ? 200 : 0,
+          overflowX: "hidden",
+          transition: "width 0.3s ease",
+          backgroundColor: "#fff",
+          color: theme.palette.text.primary,
+          borderRight: "1px solid rgba(0,0,0,0.1)",
+        }),
+      }}
+    >
+      {/* Espacio para compensar la altura del header */}
+      <Box sx={{ height: headerHeight }} />
+
+      {/* Contenido del sidebar */}
+      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+        {/* Nombre en la parte superior */}
+        {open && (
+          <Box sx={{ textAlign: "center", fontWeight: "bold", fontSize: 18, p: 2 }}>
+            apoloware
+          </Box>
+        )}
+
+        {/* Lista de ítems */}
+        {sidebarItems.map((item) => (
+          <ListItemButton
+            key={item.label}
+            onClick={() => handleNavigate(item.label)}
+            sx={{
+              "&:hover": { backgroundColor: "rgba(0,0,0,0.05)" },
+              justifyContent: open ? "initial" : "center",
+              px: open ? 2 : 0,
+            }}
+          >
+            <div style={{ width: 32, height: 32, backgroundColor: "#ddd", borderRadius: 4 }} />
+            {open && (
+              <ListItemText
+                primary={item.label}
+                sx={{
+                  ml: 2,
+                  "& .MuiTypography-root": {
+                    fontWeight: "bold",
+                    color: "inherit",
+                  },
+                }}
+              />
+            )}
+          </ListItemButton>
+        ))}
+        <Box sx={{ flexGrow: 1 }} />
+
+        {/* Botón de Cerrar sesión */}
+        {open && (
+          <Box sx={{ p: 2, borderTop: "1px solid rgba(0,0,0,0.1)" }}>
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              onClick={handleLogout}
+              startIcon={<ExitToAppIcon />}
+              sx={{
+                fontWeight: "bold",
+              }}
+            >
+              Cerrar sesión
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </Drawer>
+  );
+};
+
+export default Sidebar;
+
+
+
+===== Archivo: src/components/Card/FlipCard.tsx =====
+"use client";
+import React from "react";
+import styled from "styled-components";
+
+// Contenedor de la tarjeta con perspectiva
+const CardWrapper = styled.div`
+  width: 300px;
+  height: 250px;
+  perspective: 1000px;
+`;
+
+// Contenedor interno que realiza el flip
+const Content = styled.div`
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  will-change: transform;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 1px #000000ee;
+  transform: translateZ(0);
+  &:hover {
+    transform: rotateY(180deg);
+  }
+`;
+
+// Estilo base para las dos caras de la tarjeta
+const Face = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  will-change: transform;
+  transform: translateZ(0);
+`;
+
+// Parte frontal: el fondo se genera a partir del theme y se fuerza texto blanco y en negrita
+const Front = styled(Face)`
+  background: ${({ theme }) =>
+    `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`};
+  color: #fff;
+  & * {
+    font-weight: bold;
+    color: #fff;
+  }
+`;
+
+// Propiedad transient para la imagen de fondo
+interface BackProps {
+  $backgroundUrl: string;
+}
+const Back = styled(Face)<BackProps>`
+  background: ${({ theme, $backgroundUrl }) =>
+    `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${$backgroundUrl}) no-repeat center center`};
+  background-size: cover;
+  color: #fff;
+  transform: rotateY(180deg);
+  position: relative;
+`;
+
+// Contenedor para el ícono (o logo)
+const IconContainer = styled.div`
+  font-size: 48px;
+  margin-bottom: 10px;
+  img {
+    width: 50px;
+    height: auto;
+  }
+`;
+
+// Etiqueta para el título: texto blanco y negrita
+const TitleBadge = styled.div`
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 4px 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: bold;
+`;
+
+// Texto en la parte trasera: forzamos texto blanco y en negrita
+const BackText = styled.p`
+  text-align: center;
+  font-size: 14px;
+  margin: 0;
+  color: #fff;
+  font-weight: bold;
+`;
+
+interface FlipCardProps {
+  title: string;
+  description: string;
+  imageName: string;
+  logoName: string;
+  frontIcon?: React.ReactNode;
+}
+
+const FlipCard: React.FC<FlipCardProps> = ({
+  title,
+  description,
+  imageName,
+  logoName,
+  frontIcon,
+}) => {
+  const backgroundUrl = `/images/${imageName}`;
+  const logoUrl = `/logos/${logoName}`;
+
+  return (
+    <CardWrapper>
+      <Content>
+        <Front>
+          <IconContainer>
+            {frontIcon ? frontIcon : <img src={logoUrl} alt={`${title} logo`} />}
+          </IconContainer>
+          <TitleBadge>{title}</TitleBadge>
+        </Front>
+        <Back $backgroundUrl={backgroundUrl}>
+          <BackText>{description}</BackText>
+        </Back>
+      </Content>
+    </CardWrapper>
+  );
+};
+
+export default FlipCard;
+
+
+
+===== Archivo: src/components/Loading/Loading.tsx =====
+'use client';
+
+import React from 'react';
+import styles from './Loading.module.css';
+
+const Loading = () => {
+  return (
+    <div className={styles.loader}>
+      <div className={styles.content}>
+        <p className={styles.loadingText}>CARGANDO APOLOWARE</p>
+      </div>
+    </div>
+  );
+};
+
+export default Loading;
+
+
+
+===== Archivo: src/components/ClientProviders.tsx =====
+'use client';
+
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from '../store';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import { AuthProvider } from '@/context/AuthContext';
+import Notification from '../components/Notification/Notification';
+import { ThemeProviderClient, useThemeContext } from '@/components/ThemeContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface ClientProvidersProps {
+  children: React.ReactNode;
+}
+
+export default function ClientProviders({ children }: ClientProvidersProps) {
+  return (
+    <Provider store={store}>
+      <AuthProvider>
+        <ThemeProviderClient>
+          <InnerProviders>{children}</InnerProviders>
+        </ThemeProviderClient>
+      </AuthProvider>
+    </Provider>
+  );
+}
+
+function InnerProviders({ children }: { children: React.ReactNode }) {
+  const { theme } = useThemeContext();
+  return (
+    <MuiThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        <ToastContainer position="top-right" autoClose={5000} />
+        <Notification />
+        {children}
+      </StyledThemeProvider>
+    </MuiThemeProvider>
+  );
+}
+
+
+
+===== Archivo: src/components/container.tsx =====
+import { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+
+const Container = forwardRef<
+  React.ElementRef<"div">,
+  React.ComponentPropsWithoutRef<"div">
+>(function Container({ className, children, ...props }, ref) {
+  return (
+    <div
+      ref={ref}
+      className={cn("max-w-8xl mx-auto w-full px-6 tablet:px-10 desktop:px-14", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+});
+
+export default Container;
+
+
+
+===== Archivo: src/components/Auth/LoginForm.tsx =====
+// src/components/Auth/LoginForm.tsx
+import React from "react";
+import styled from "styled-components";
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(45deg, #6adbef, #5ce1e6);
+  padding: 30px;
+  width: 450px;
+  border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  transition: background 0.3s ease;
+`;
+
+const Title = styled.h1`
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 10px;
+`;
+
+const WelcomeMessage = styled.p`
+  text-align: center;
+  color: white;
+  margin-bottom: 20px;
+  font-size: 16px;
+`;
+
+const FlexColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const InputForm = styled.div`
+  border: 1.5px solid #ecedec;
+  border-radius: 10em;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  transition: 0.2s ease-in-out;
+  background-color: white;
+
+  &:focus-within {
+    border: 1.5px solid orange;
+  }
+`;
+
+const InputField = styled.input`
+  margin-left: 10px;
+  border-radius: 10rem;
+  border: none;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  color: black;
+
+  &::placeholder {
+    color: #aaa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+`;
+
+const FlexRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+const Span = styled.span`
+  font-size: 14px;
+  margin-left: 5px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const ButtonSubmit = styled.button`
+  position: relative;
+  display: inline-block;
+  padding: 15px 30px;
+  text-align: center;
+  letter-spacing: 1px;
+  background: transparent;
+  transition: ease-out 0.5s;
+  border: 2px solid;
+  border-radius: 10em;
+  box-shadow: inset 0 0 0 0 blue;
+  margin: 20px 0 10px 0;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  height: 50px;
+  width: 100%;
+  cursor: pointer;
+
+  &:hover {
+    color: white;
+    box-shadow: inset 0 -100px 0 0 royalblue;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+`;
+
+const Paragraph = styled.p`
+  text-align: center;
+  color: white;
+  font-size: 14px;
+  margin: 5px 0;
+`;
+
+const Btn = styled.button`
+  margin-top: 10px;
+  width: 100%;
+  height: 50px;
+  border-radius: 10em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  gap: 10px;
+  border: 1px solid #ededef;
+  background-color: white;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+
+  &:hover {
+    border: 1px solid orange;
+  }
+`;
+
+type LoginFormProps = {
+  loginEmail: string;
+  loginPassword: string;
+  onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string | null;
+  onSignUpClick: () => void;
+};
+
+const LoginForm: React.FC<LoginFormProps> = ({
+  loginEmail,
+  loginPassword,
+  onEmailChange,
+  onPasswordChange,
+  onSubmit,
+  error,
+  onSignUpClick,
+}) => {
+  return (
+    <Form onSubmit={onSubmit}>
+      <Title>Welcome!!</Title>
+
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>User</label>
+      </FlexColumn>
+      <InputForm>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          viewBox="0 0 32 32"
+          height="20"
+        >
+          <g data-name="Layer 3" id="Layer_3">
+            <path d="M30.853,13.87a15,15,0,0,0-29.729,4.082,15.1,15.1,0,0,0,12.876,12.918,15.6,15.6,0,0,0,2.016.13,14.85,14.85,0,0,0,7.715-2.145,1,1,0,1,0-1.031-1.711A13.007,13.007,0,1,1,30.853,13.87Z" />
+          </g>
+        </svg>
+        <InputField
+          type="text"
+          placeholder="Enter your User"
+          value={loginEmail}
+          onChange={onEmailChange}
+          required
+        />
+      </InputForm>
+
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>Password</label>
+      </FlexColumn>
+      <InputForm>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          viewBox="-64 0 512 512"
+          height="20"
+        >
+          <path d="M336,512H48c-26.453125,0-48-21.523438-48-48V240c0-26.476562,21.546875-48,48-48H336c26.453125,0,48,21.523438,48,48V464C384,490.476562,362.453125,512,336,512Z"/>
+          <path d="M48,224c-8.8125,0-16,7.167969-16,16V464c0,8.832031,7.1875,16,16,16H336c8.8125,0,16-7.167969,16-16V240c0-8.832031-7.1875-16-16-16Z"/>
+        </svg>
+        <InputField
+          type="password"
+          placeholder="Enter your Password"
+          value={loginPassword}
+          onChange={onPasswordChange}
+          required
+        />
+      </InputForm>
+
+      {error && (
+        <p style={{ color: "red", textAlign: "center", fontWeight: "bold" }}>
+          {error}
+        </p>
+      )}
+
+      <FlexRow>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <input type="radio" id="remember" />
+          <label
+            htmlFor="remember"
+            style={{ fontSize: "14px", color: "black", fontWeight: "400" }}
+          >
+            Remember me
+          </label>
+        </div>
+        <Span>Forgot password?</Span>
+      </FlexRow>
+
+      <ButtonSubmit type="submit">Sign In</ButtonSubmit>
+
+      <Paragraph>
+        Don't have an account?{" "}
+        <Span onClick={onSignUpClick}>Sign Up</Span>
+      </Paragraph>
+
+      <Paragraph>Or With</Paragraph>
+      <FlexRow>
+        <Btn>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            width="20"
+            height="20"
+          >
+            <path
+              d="M113.47,309.408L95.648,375.94l-65.139,1.378C11.042,341.211,0,299.9,0,256c0-42.451,10.324-82.483,28.624-117.732h0.014l57.992,10.632l25.404,57.644c-5.317,15.501-8.215,32.141-8.215,49.456C103.821,274.792,107.225,292.797,113.47,309.408z"
+              style={{ fill: "#FBBB00" }}
+            ></path>
+            <path
+              d="M507.527,208.176C510.467,223.662,512,239.655,512,256c0,18.328-1.927,36.206-5.598,53.451c-12.462,58.683-45.025,109.925-90.134,146.187l-0.014-0.014l-73.044-3.727l-10.338-64.535c29.932-17.554,53.324-45.025,65.646-77.911h-136.89V208.176h138.887L507.527,208.176z"
+              style={{ fill: "#518EF8" }}
+            ></path>
+            <path
+              d="M416.253,455.624l0.014,0.014C372.396,490.901,316.666,512,256,512c-97.491,0-182.252-54.491-225.491-134.681l82.961-67.91c21.619,57.698,77.278,98.771,142.53,98.771c28.047,0,54.323-7.582,76.87-20.818L416.253,455.624z"
+              style={{ fill: "#28B446" }}
+            ></path>
+            <path
+              d="M419.404,58.936l-82.933,67.896c-23.335-14.586-50.919-23.012-80.471-23.012c-66.729,0-123.429,42.957-143.965,102.724l-83.397-68.276h-0.014C71.23,56.123,157.06,0,256,0c161.115,0,218.068,22.126,262.404,58.936Z"
+              style={{ fill: "#F14336" }}
+            ></path>
+          </svg>
+          Google
+        </Btn>
+        <Btn>
+          <svg
+            viewBox="0 0 22.773 22.773"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+          >
+            <g>
+              <g>
+                <path
+                  d="M15.769,0c0.053,0,0.106,0,0.162,0c0.13,1.606-0.483,2.806-1.228,3.675c-0.731,0.863-1.732,1.7-3.351,1.573
+                c-0.108-1.583,0.506-2.694,1.25-3.561C13.292,0.879,14.557,0.16,15.769,0z"
+                ></path>
+                <path
+                  d="M20.67,16.716c0,0.016,0,0.03,0,0.045c-0.455,1.378-1.104,2.559-1.896,3.655c-0.723,0.995-1.609,2.334-3.191,2.334
+                c-1.367,0-2.275-0.879-3.676-0.903c-1.482-0.024-2.297,0.735-3.652,0.926c-0.155,0-0.31,0-0.462,0
+                c-0.995-0.144-1.798-0.932-2.383-1.642c-1.725-2.098-3.058-4.808-3.306-8.276c0-0.34,0-0.679,0-1.019
+                c0.105-2.482,1.311-4.5,2.914-5.478c0.846-0.52,2.009-0.963,3.304-0.765c0.555,0.086,1.122,0.276,1.619,0.464
+                c0.471,0.181,1.06,0.502,1.618,0.485c0.378-0.011,0.754-0.208,1.135-0.347c1.116-0.403,2.21-0.865,3.652-0.648
+                c1.733,0.262,2.963,1.032,3.723,2.22c-1.466,0.933-2.625,2.339-2.427,4.74C17.818,14.688,19.086,15.964,20.67,16.716z"
+                ></path>
+              </g>
+            </g>
+          </svg>
+          Apple
+        </Btn>
+      </FlexRow>
+    </Form>
+  );
+};
+
+export default LoginForm;
+
+
+
+===== Archivo: src/components/Auth/RegisterForm.tsx =====
+import React from "react";
+import styled from "styled-components";
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(45deg, #6adbef, #5ce1e6);
+  padding: 30px;
+  width: 450px;
+  border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  transition: background 0.3s ease;
+`;
+
+const FlexColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const InputForm = styled.div`
+  border: 1.5px solid #ecedec;
+  border-radius: 10em;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  transition: 0.2s ease-in-out;
+  background-color: white;
+
+  &:focus-within {
+    border: 1.5px solid orange;
+  }
+`;
+
+const InputField = styled.input`
+  margin-left: 10px;
+  border-radius: 10rem;
+  border: none;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  color: black;
+  &::placeholder {
+    color: #aaa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5em;
+  gap: 10px;
+`;
+
+const Button = styled.button`
+  padding: 15px 30px;
+  text-align: center;
+  letter-spacing: 1px;
+  background: transparent;
+  transition: ease-out 0.5s;
+  border: 2px solid;
+  border-radius: 10em;
+  box-shadow: inset 0 0 0 0 blue;
+  margin: 20px 0 10px 0;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  height: 50px;
+  flex: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: white;
+    box-shadow: inset 0 -100px 0 0 royalblue;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+`;
+
+const FlexRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+// Se usa $error como prop transitoria para evitar pasarlo al DOM
+const Message = styled.p<{ $error?: boolean }>`
+  text-align: center;
+  font-size: 14px;
+  color: ${(props) => (props.$error ? "red" : "green")};
+`;
+
+type RegisterFormProps = {
+  regUsername: string;
+  regEmail: string;
+  regPassword: string;
+  regConfirmPassword: string;
+  onUsernameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onConfirmPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  error?: string | null;
+  successMessage?: string | null;
+  onLoginClick: () => void;
+};
+
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  regUsername,
+  regEmail,
+  regPassword,
+  regConfirmPassword,
+  onUsernameChange,
+  onEmailChange,
+  onPasswordChange,
+  onConfirmPasswordChange,
+  onSubmit,
+  error,
+  successMessage,
+  onLoginClick,
+}) => {
+  return (
+    <Form onSubmit={onSubmit}>
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>Username</label>
+      </FlexColumn>
+      <InputForm>
+        <svg viewBox="0 0 16 16" fill="currentColor" height="16" width="16">
+          <path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z" />
+        </svg>
+        <InputField
+          type="text"
+          placeholder="Enter your Username"
+          value={regUsername}
+          onChange={onUsernameChange}
+          required
+        />
+      </InputForm>
+
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>Email</label>
+      </FlexColumn>
+      <InputForm>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          viewBox="0 0 32 32"
+          height="20"
+        >
+          <g data-name="Layer 3" id="Layer_3">
+            <path d="m30.853 13.87a15 15 0 0 0 -29.729 4.082 15.1 15.1 0 0 0 12.876 12.918 15.6 15.6 0 0 0 2.016.13 14.85 14.85 0 0 0 7.715-2.145 1 1 0 1 0 -1.031-1.711 13.007 13.007 0 1 1 5.458-6.529 2.149 2.149 0 0 1 -4.158-.759v-10.856a1 1 0 0 0 -2 0v1.726a8 8 0 1 0 .2 10.325 4.135 4.135 0 0 0 7.83.274 15.2 15.2 0 0 0 .823-7.455zm-14.853 8.13a6 6 0 1 1 6-6 6.006 6.006 0 0 1 -6 6z" />
+          </g>
+        </svg>
+        <InputField
+          type="email"
+          placeholder="Enter your Email"
+          value={regEmail}
+          onChange={onEmailChange}
+          required
+        />
+      </InputForm>
+
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>Password</label>
+      </FlexColumn>
+      <InputForm>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          viewBox="-64 0 512 512"
+          height="20"
+        >
+          <path d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0" />
+          <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0" />
+        </svg>
+        <InputField
+          type="password"
+          placeholder="Enter your Password"
+          value={regPassword}
+          onChange={onPasswordChange}
+          required
+        />
+      </InputForm>
+
+      <FlexColumn>
+        <label style={{ color: "white", fontWeight: 600 }}>Confirm Password</label>
+      </FlexColumn>
+      <InputForm>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          viewBox="-64 0 512 512"
+          height="20"
+        >
+          <path d="m336 512h-288c-26.453125 0-48-21.523438-48-48v-224c0-26.476562 21.546875-48 48-48h288c26.453125 0 48 21.523438 48 48v224c0 26.476562-21.546875 48-48 48zm-288-288c-8.8125 0-16 7.167969-16 16v224c0 8.832031 7.1875 16 16 16h288c8.8125 0 16-7.167969 16-16v-224c0-8.832031-7.1875-16-16-16zm0 0" />
+          <path d="m304 224c-8.832031 0-16-7.167969-16-16v-80c0-52.929688-43.070312-96-96-96s-96 43.070312-96 96v80c0 8.832031-7.167969 16-16 16s-16-7.167969-16-16v-80c0-70.59375 57.40625-128 128-128s128 57.40625 128 128v80c0 8.832031-7.167969 16-16 16zm0 0" />
+        </svg>
+        <InputField
+          type="password"
+          placeholder="Enter your Confirm Password"
+          value={regConfirmPassword}
+          onChange={onConfirmPasswordChange}
+          required
+        />
+      </InputForm>
+
+      {error && <Message $error>{error}</Message>}
+      {!error && successMessage && <Message>{successMessage}</Message>}
+
+      <ButtonContainer>
+        <Button type="submit">Sign Up</Button>
+        <Button type="button" onClick={onLoginClick}>
+          Login
+        </Button>
+      </ButtonContainer>
+    </Form>
+  );
+};
+
+export default RegisterForm;
+
+
+
+===== Archivo: src/components/Auth/ToggleSwitch.tsx =====
+import React from "react";
+import "./ToggleSwitch.css"; // Asegúrate de que la ruta sea correcta
+
+type ToggleSwitchProps = {
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange }) => {
+  return (
+    <div style={{ transform: "scale(0.5)", margin: "0 auto" }}>
+      <label>
+        <input className="slider" type="checkbox" checked={checked} onChange={onChange} />
+        <div className="switch">
+          <div className="suns"></div>
+          <div className="moons">
+            <div className="star star-1"></div>
+            <div className="star star-2"></div>
+            <div className="star star-3"></div>
+            <div className="star star-4"></div>
+            <div className="star star-5"></div>
+            <div className="first-moon"></div>
+          </div>
+          <div className="sand"></div>
+          <div className="bb8">
+            <div className="antennas">
+              <div className="antenna short"></div>
+              <div className="antenna long"></div>
+            </div>
+            <div className="head">
+              <div className="stripe one"></div>
+              <div className="stripe two"></div>
+              <div className="eyes">
+                <div className="eye one"></div>
+                <div className="eye two"></div>
+              </div>
+              <div className="stripe detail">
+                <div className="detail zero"></div>
+                <div className="detail zero"></div>
+                <div className="detail one"></div>
+                <div className="detail two"></div>
+                <div className="detail three"></div>
+                <div className="detail four"></div>
+                <div className="detail five"></div>
+                <div className="detail five"></div>
+              </div>
+              <div className="stripe three"></div>
+            </div>
+            <div className="ball">
+              <div className="lines one"></div>
+              <div className="lines two"></div>
+              <div className="ring one"></div>
+              <div className="ring two"></div>
+              <div className="ring three"></div>
+            </div>
+            <div className="shadow"></div>
+          </div>
+        </div>
+      </label>
+    </div>
+  );
+};
+
+export default ToggleSwitch;
+
+
+
+===== Archivo: src/components/Auth/AuthFlipCard.tsx =====
+"use client";
+import React, { useState } from "react";
+import styled from "styled-components";
+import { useRouter } from "next/navigation";
+
+/** 
+ * Ajusta las funciones de login/registro a tu lógica real:
+ * - fetch a tu API,
+ * - dispatch a tu Redux slice,
+ * - o cualquier otra forma de autenticar.
+ */
+async function fakeLogin(username: string, password: string) {
+  // Lógica simulada de login
+  if (username === "test" && password === "123") return true;
+  throw new Error("Usuario/contraseña inválidos");
+}
+
+async function fakeRegister(username: string, email: string, password: string) {
+  // Lógica simulada de registro
+  if (!username || !email || !password) throw new Error("Datos incompletos");
+  return true;
+}
+
+const FlipCardContainer = styled.div`
+  width: 400px;
+  height: 500px;
+  perspective: 1000px; /* Habilita el efecto 3D */
+`;
+
+const FlipCardInner = styled.div<{ isFlipped: boolean }>`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+  transform: ${(props) => (props.isFlipped ? "rotateY(180deg)" : "none")};
+`;
+
+const CardSide = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden; /* Oculta la cara trasera cuando se gira */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+/* 
+   Forma curva en la esquina derecha.
+   - Si quieres que sea más pronunciada, aumenta px en top-right y bottom-right.
+*/
+const CardContent = styled.div`
+  width: 320px;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 0 50px 50px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+`;
+
+const Front = styled(CardSide)`
+  z-index: 2;
+`;
+
+const Back = styled(CardSide)`
+  transform: rotateY(180deg);
+`;
+
+const Title = styled.h2`
+  text-align: left;
+  margin: 0 0 15px 0;
+  font-family: sans-serif;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+`;
+
+/* Contenedor para input con ícono a la izquierda */
+const InputContainer = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const IconHolder = styled.span`
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #999;
+  display: flex;
+  align-items: center;
+`;
+
+/* Ajusta los íconos en base64 o FontAwesome, etc. */
+const Input = styled.input`
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 14px;
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const RememberLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: #333;
+`;
+
+const SmallLink = styled.span`
+  font-size: 14px;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+`;
+
+const ErrorMessage = styled.p`
+  color: red;
+  font-size: 13px;
+  margin: 0;
+  text-align: left;
+`;
+
+/* Botones */
+const Button = styled.button`
+  padding: 10px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(45deg, #6adbef, #5ce1e6);
+  color: #fff;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const SecondaryRow = styled.div`
+  text-align: center;
+  font-size: 14px;
+  margin: 10px 0;
+`;
+
+const LinkText = styled.span`
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+`;
+
+const OrText = styled.p`
+  text-align: center;
+  font-size: 14px;
+  margin: 10px 0;
+  color: #666;
+`;
+
+const SocialButtons = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const SocialBtn = styled.button`
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 20px;
+  background: #f1f1f1;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  &:hover {
+    background: #ddd;
+  }
+
+  img {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const AuthFlipCard: React.FC = () => {
+  const [isFlipped, setIsFlipped] = useState(false);
+
+  // Campos de Login
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loginError, setLoginError] = useState("");
+
+  // Campos de Registro
+  const [regUsername, setRegUsername] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirm, setRegConfirm] = useState("");
+  const [regError, setRegError] = useState("");
+
+  const router = useRouter();
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    try {
+      await fakeLogin(loginUsername, loginPassword);
+      // Éxito: redirecciona a tu dashboard
+      router.push("/dashboard");
+    } catch (err: any) {
+      setLoginError(err.message || "Error al iniciar sesión");
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegError("");
+    if (regPassword !== regConfirm) {
+      setRegError("Las contraseñas no coinciden");
+      return;
+    }
+    try {
+      await fakeRegister(regUsername, regEmail, regPassword);
+      // Éxito: vuelve a login
+      setIsFlipped(false);
+    } catch (err: any) {
+      setRegError(err.message || "Error al registrarse");
+    }
+  };
+
+  return (
+    <FlipCardContainer>
+      <FlipCardInner isFlipped={isFlipped}>
+        {/* ====== CARA FRONTAL (Login) ====== */}
+        <Front>
+          <CardContent>
+            <Title>Welcome!!</Title>
+            <Form onSubmit={handleLoginSubmit}>
+              {/* Username */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0-3-3 3 3 0 0 0 3 3Z" />
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="text"
+                  placeholder="Username"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Password */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a3 3 0 0 0-3 3v1H4a2 2 0 0 0-2 2v3a2 
+                    2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3a2 2 
+                    0 0 0-2-2h-1V7a3 3 0 0 0-3-3z" />
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Remember y Forgot */}
+              <Row>
+                <RememberLabel>
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={() => setRememberMe(!rememberMe)}
+                  />
+                  <span>Remember me</span>
+                </RememberLabel>
+                <SmallLink>Forgot password?</SmallLink>
+              </Row>
+              {/* Error login */}
+              {loginError && <ErrorMessage>{loginError}</ErrorMessage>}
+              {/* Botón Login */}
+              <Button type="submit">Login</Button>
+            </Form>
+            {/* Otras opciones */}
+            <SecondaryRow>
+              Don’t have an account?{" "}
+              <LinkText onClick={() => setIsFlipped(true)}>Sign Up</LinkText>
+            </SecondaryRow>
+            <OrText>Or with</OrText>
+            <SocialButtons>
+              <SocialBtn>
+                Google
+              </SocialBtn>
+              <SocialBtn>
+                Apple
+              </SocialBtn>
+            </SocialButtons>
+          </CardContent>
+        </Front>
+
+        {/* ====== CARA POSTERIOR (Register) ====== */}
+        <Back>
+          <CardContent>
+            <Title>Sign Up</Title>
+            <Form onSubmit={handleRegisterSubmit}>
+              {/* Username */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 
+                    4-1 1-1 1H3Zm5-6a3 3 0 1 0-3-3 
+                    3 3 0 0 0 3 3Z" />
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="text"
+                  placeholder="Username"
+                  value={regUsername}
+                  onChange={(e) => setRegUsername(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Email */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M0 4a2 2 0 0 1 2-2h12a2 
+                    2 0 0 1 2 2v8a2 2 0 0 
+                    1-2 2H2a2 2 0 0 1-2-2V4zm2
+                    -.5a.5.5 0 0 0-.5.5v.217l6 
+                    3.6 6-3.6V4a.5.5 0 0 
+                    0-.5-.5H2zm12 2.383-5.28 
+                    3.168a.5.5 0 0 1-.44 
+                    0L3 5.883V12a.5.5 0 0 
+                    0 .5.5h9a.5.5 0 0 0 
+                    .5-.5V5.883z"/>
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Password */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a3 3 0 0 0-3 
+                    3v1H4a2 2 0 0 0-2 
+                    2v3a2 2 0 0 0 2 
+                    2h8a2 2 0 0 0 
+                    2-2v-3a2 2 0 0 
+                    0-2-2h-1V7a3 3 
+                    0 0 0-3-3z" />
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Confirm Password */}
+              <InputContainer>
+                <IconHolder>
+                  <svg
+                    width="14"
+                    height="14"
+                    fill="#999"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 4a3 3 0 0 0-3 
+                    3v1H4a2 2 0 0 0-2 
+                    2v3a2 2 0 0 0 2 
+                    2h8a2 2 0 0 0 
+                    2-2v-3a2 2 0 0 
+                    0-2-2h-1V7a3 3 
+                    0 0 0-3-3z" />
+                  </svg>
+                </IconHolder>
+                <Input
+                  type="password"
+                  placeholder="Confirm password"
+                  value={regConfirm}
+                  onChange={(e) => setRegConfirm(e.target.value)}
+                  required
+                />
+              </InputContainer>
+              {/* Error register */}
+              {regError && <ErrorMessage>{regError}</ErrorMessage>}
+              {/* Botón Sign Up */}
+              <Button type="submit">Sign Up</Button>
+            </Form>
+            {/* Botón para volver a Login */}
+            <SecondaryRow>
+              <LinkText onClick={() => setIsFlipped(false)}>Login</LinkText>
+            </SecondaryRow>
+          </CardContent>
+        </Back>
+      </FlipCardInner>
+    </FlipCardContainer>
+  );
+};
+
+export default AuthFlipCard;
+
+
+
+===== Archivo: src/components/Notification/Notification.tsx =====
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
+import styled from 'styled-components';
+
+const NotificationContainer = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const NotificationItem = styled.div<{ type: string }>`
+  padding: 10px 20px;
+  border-radius: 4px;
+  background-color: ${({ type }) => {
+    switch (type) {
+      case 'error':
+        return 'rgba(255, 0, 0, 0.8)';
+      case 'warning':
+        return 'rgba(255, 165, 0, 0.8)';
+      case 'success':
+        return 'rgba(0, 128, 0, 0.8)';
+      default:
+        return 'rgba(0, 0, 255, 0.8)';
+    }
+  }};
+  color: #fff;
+`;
+
+interface NotificationType {
+  message: string;
+  type: string;
+  timestamp: number;
+}
+
+const Notification: React.FC = () => {
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Este efecto se asegura de que el componente se renderice solo en cliente.
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Ejemplo: se simula agregar una notificación de éxito a los 2 segundos.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const newNotif: NotificationType = {
+        message: "Operación exitosa",
+        type: "success",
+        timestamp: new Date().getTime(),
+      };
+      setNotifications(prev => [...prev, newNotif]);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Cada segundo se remueven las notificaciones que tengan más de 5 segundos.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNotifications(prev =>
+        prev.filter(notif => new Date().getTime() - notif.timestamp < 5000)
+      );
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!isMounted) return null;
+
+  return ReactDOM.createPortal(
+    <NotificationContainer>
+      {notifications.map((notif, index) => (
+        <NotificationItem key={index} type={notif.type}>
+          {notif.message}
+        </NotificationItem>
+      ))}
+    </NotificationContainer>,
+    document.body
+  );
+};
+
+export default Notification;
+
+
+
+===== Archivo: src/components/chart-blocks/CustomerSatisfication.tsx =====
+"use client";
+
+import { SmilePlus, ThumbsDown, ThumbsUp } from "lucide-react";
+import { customerSatisfication, totalCustomers } from "@/data/customer-satisfication";
+import ChartTitle from "./components/chart-title";
+import LinearProgress from "./components/linear-progress";
+
+const customerSatisficationOptions = [
+  {
+    label: "Positive",
+    color: "#5fb67a",
+    percentage: customerSatisfication.positive,
+    icon: <ThumbsUp className="h-6 w-6" stroke="#5fb67a" fill="#5fb67a" />,
+  },
+  {
+    label: "Neutral",
+    color: "#f5c36e",
+    percentage: customerSatisfication.neutral,
+    icon: <ThumbsUp className="h-6 w-6" stroke="#f5c36e" fill="#f5c36e" />,
+  },
+  {
+    label: "Negative",
+    color: "#da6d67",
+    percentage: customerSatisfication.negative,
+    icon: <ThumbsDown className="h-6 w-6" stroke="#da6d67" fill="#da6d67" />,
+  },
+];
+
+function TotalCustomers() {
+  return (
+    <div className="flex flex-col items-start justify-center">
+      <div className="text-xs text-gray-500">Responses Received</div>
+      <div className="text-2xl font-medium">{totalCustomers} Customers</div>
+    </div>
+  );
+}
+
+export default function CustomerSatisfication() {
+  return (
+    <section className="flex h-full flex-col gap-2">
+      <ChartTitle title="Customer Satisfication" icon={<SmilePlus />} />
+      <div className="my-4 flex h-full items-center justify-between">
+        <div className="mx-auto grid w-full grid-cols-2 gap-6">
+          <TotalCustomers />
+          {customerSatisficationOptions.map((option) => (
+            <LinearProgress
+              key={option.label}
+              label={option.label}
+              color={option.color}
+              percentage={option.percentage}
+              icon={option.icon}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+===== Archivo: src/components/chart-blocks/components/linear-progress.tsx =====
+"use client";
+
+import { VChart } from "@visactor/react-vchart";
+import type { ILinearProgressChartSpec } from "@visactor/vchart";
+import { numberToPercentage } from "@/lib/utils";
+
+const getSpec = (label: string, color: string, percentage: number): ILinearProgressChartSpec => {
+  return {
+    type: "linearProgress",
+    data: [
+      {
+        id: "id0",
+        values: [
+          { type: label, value: percentage },
+        ],
+      },
+    ],
+    direction: "horizontal",
+    xField: "value",
+    yField: "type",
+    seriesField: "type",
+    height: 10,
+    cornerRadius: 10,
+    progress: { style: { cornerRadius: 0 } },
+    color: [color],
+    bandWidth: 10,
+    padding: 0,
+    tooltip: {
+      trigger: ["click", "hover"],
+      mark: {
+        title: { visible: false },
+        content: [
+          { key: label, value: (datum: any) => (datum ? `${numberToPercentage(percentage)}` : "") },
+        ],
+      },
+    },
+    axes: [
+      {
+        orient: "right",
+        type: "band",
+        domainLine: { visible: false },
+        tick: { visible: false },
+        label: { formatMethod: () => numberToPercentage(percentage) },
+        maxWidth: "60%",
+        width: 36,
+      },
+    ],
+  };
+};
+
+export default function LinearProgress({
+  label,
+  color,
+  percentage,
+  icon,
+}: {
+  label: string;
+  color: string;
+  percentage: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-1 flex items-center gap-x-2">
+        {icon}
+        <div>
+          <div className="text-xs text-gray-500">{label}</div>
+          <div className="text-xl font-medium">{numberToPercentage(percentage)}</div>
+        </div>
+      </div>
+      <div className="relative">
+        <VChart spec={getSpec(label, color, percentage)} />
+      </div>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/components/chart-blocks/components/metric-card.tsx =====
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function MetricCard({
+  title,
+  value,
+  change,
+  className,
+}: {
+  title: string;
+  value: number;
+  change: number;
+  className?: string;
+}) {
+  return (
+    <section className={cn("flex flex-col", className)}>
+      <h2 className="mb-1 text-sm text-gray-600">{title}</h2>
+      <div className="flex items-center gap-2">
+        <span className="text-xl font-medium">{value.toLocaleString()}</span>
+        <ChangeIndicator change={change} />
+      </div>
+      <div className="text-xs text-gray-500">Compare to last month</div>
+    </section>
+  );
+}
+
+function ChangeIndicator({ change }: { change: number }) {
+  return (
+    <span
+      className={cn(
+        "flex items-center rounded-sm px-1 py-0.5 text-xs",
+        change > 0 ? "bg-green-50 text-green-500" : "bg-red-50 text-red-500"
+      )}
+    >
+      {change > 0 ? "+" : ""}
+      {Math.round(change * 100)}%
+      {change > 0 ? (
+        <ArrowUpRight className="ml-0.5 h-3 w-3" />
+      ) : (
+        <ArrowDownRight className="ml-0.5 h-3 w-3" />
+      )}
+    </span>
+  );
+}
+
+
+
+===== Archivo: src/components/chart-blocks/components/chart-title.tsx =====
+"use client";
+
+import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
+
+export default function ChartTitle({
+  title,
+  icon,
+  className,
+}: {
+  title: string;
+  icon: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex items-center gap-2", className)}>
+      {icon}
+      <h2 className="text-lg font-medium">{title}</h2>
+    </div>
+  );
+}
+
+
+
+===== Archivo: src/components/chart-blocks/Metrics.tsx =====
+import Container from "@/components/container";
+import { metrics } from "@/data/metrics";
+import MetricCard from "./components/metric-card";
+
+export default function Metrics() {
+  return (
+    <Container className="grid grid-cols-1 gap-y-6 border-b border-gray-300 py-4 phone:grid-cols-2 laptop:grid-cols-4">
+      {metrics.map((metric) => (
+        <MetricCard key={metric.title} {...metric} />
+      ))}
+    </Container>
+  );
+}
+
+
+
+===== Archivo: src/components/chart-blocks/AverageTicketsCreated.tsx =====
+// src/components/chart-blocks/AverageTicketsCreated.tsx
+"use client";
+
+import dynamic from "next/dynamic";
+import { useAtomValue } from "jotai";
+import type { IBarChartSpec } from "@visactor/vchart";
+import { ticketChartDataAtom } from "@/lib/atoms";
+import type { TicketMetric } from "@/lib/atoms";
+
+// Importamos VChart dinámicamente para asegurarnos de que se ejecute solo en el cliente.
+const VChart = dynamic(
+  () => import("@visactor/react-vchart").then((mod) => mod.VChart),
+  { ssr: false }
+);
+
+const generateSpec = (data: TicketMetric[]): IBarChartSpec => ({
+  width: 400, // Ancho definido
+  height: 300, // Alto definido
+  type: "bar",
+  data: [
+    {
+      id: "barData",
+      values: data,
+    },
+  ],
+  xField: "date",
+  yField: "count",
+  seriesField: "type",
+  padding: [10, 0, 10, 0],
+  legends: { visible: false },
+  stack: false,
+  tooltip: { trigger: ["click", "hover"] },
+  bar: {
+    state: {
+      hover: { outerBorder: { distance: 2, lineWidth: 2 } },
+    },
+    style: {
+      cornerRadius: [12, 12, 12, 12],
+      zIndex: (datum: any) => (datum.type === "resolved" ? 2 : 1),
+    },
+  },
+});
+
+export default function AverageTicketsCreated() {
+  const ticketChartData = useAtomValue(ticketChartDataAtom);
+  const spec = generateSpec(ticketChartData);
+  return <VChart spec={spec} />;
+}
+
+
+
+===== Archivo: src/components/chart-blocks/Conversions.tsx =====
+// src/components/chart-blocks/Conversions.tsx
+"use client";
+
+import dynamic from "next/dynamic";
+import type { ICirclePackingChartSpec } from "@visactor/vchart";
+import { convertions } from "@/data/convertions";
+import { addThousandsSeparator } from "@/lib/utils";
+
+// Importación dinámica de VChart para evitar SSR
+const VChart = dynamic(
+  () => import("@visactor/react-vchart").then((mod) => mod.VChart),
+  { ssr: false }
+);
+
+const spec: ICirclePackingChartSpec = {
+  width: 400,
+  height: 300,
+  data: [{ id: "data", values: convertions }],
+  type: "circlePacking",
+  categoryField: "name",
+  valueField: "value",
+  drill: true,
+  padding: 0,
+  layoutPadding: 5,
+  label: {
+    style: {
+      fill: "white",
+      stroke: false,
+      visible: (d: any) => d.depth === 0,
+      text: (d: any) => addThousandsSeparator(d.value),
+      fontSize: (d: any) => d.radius / 2,
+      dy: (d: any) => d.radius / 8,
+    },
+  },
+  legends: [{ visible: true, orient: "top", position: "start", padding: 0 }],
+  tooltip: {
+    trigger: ["click", "hover"],
+    mark: { content: { value: (d: any) => addThousandsSeparator(d?.value) } },
+  },
+  animationEnter: { easing: "cubicInOut" },
+  animationExit: { easing: "cubicInOut" },
+  animationUpdate: { easing: "cubicInOut" },
+};
+
+export default function Conversions() {
+  return <VChart spec={spec} />;
+}
+
+
+
+===== Archivo: src/components/chart-blocks/TicketByChannels.tsx =====
+"use client";
+
+import React from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import styled from "styled-components";
+
+const data = [
+  { channel: "Email", tickets: 400 },
+  { channel: "Phone", tickets: 300 },
+  { channel: "Chat", tickets: 500 },
+  { channel: "Social", tickets: 200 },
+];
+
+const ChartWrapper = styled.div`
+  width: 100%;
+  height: 300px;
+`;
+
+export default function TicketByChannels() {
+  return (
+    <ChartWrapper>
+      <BarChart width={400} height={300} data={data}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="channel" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="tickets" fill="#8884d8" />
+      </BarChart>
+    </ChartWrapper>
+  );
+}
+
+
+
+===== Archivo: src/components/ThemeContext.tsx =====
+// src/components/ThemeContext.tsx
+"use client";
+
+import React, { createContext, useContext, useState } from "react";
+import { themes } from "@/theme/themes";
+
+interface ThemeContextType {
+  currentTheme: number;
+  theme: typeof themes[0];
+  changeTheme: (index: number) => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export function ThemeProviderClient({ children }: { children: React.ReactNode }) {
+  // Ajustamos para que no se salga de [0..2]
+  const initialIndex = new Date().getDay() % themes.length;
+
+  // Creamos el state usando ese índice
+  const [currentTheme, setCurrentTheme] = useState(initialIndex);
+  const [theme, setTheme] = useState(themes[initialIndex]);
+
+  const changeTheme = (index: number) => {
+    // Validamos que index esté dentro de [0..themes.length-1]
+    if (index >= 0 && index < themes.length) {
+      setCurrentTheme(index);
+      setTheme(themes[index]);
+    }
+  };
+
+  return (
+    <ThemeContext.Provider value={{ currentTheme, theme, changeTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useThemeContext() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useThemeContext must be used within a ThemeProviderClient");
+  }
+  return context;
+}
+
+
+
+===== Archivo: src/components/VisactorDashboard.tsx =====
+// myorg/apps/frontend-web/src/components/VisactorDashboard.tsx
+"use client";
+
+import React from "react";
+import styled from "styled-components";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts";
+
+// Contenedor con estilos inspirados en la plantilla Visactor
+const DashboardContainer = styled.div`
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+`;
+
+const ChartTitle = styled.h2`
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+`;
+
+// Datos de ejemplo para el gráfico
+const data = [
+  { name: "Ene", value: 400 },
+  { name: "Feb", value: 300 },
+  { name: "Mar", value: 500 },
+  { name: "Abr", value: 200 },
+  { name: "May", value: 278 },
+  { name: "Jun", value: 189 },
+];
+
+const VisactorDashboard: React.FC = () => {
+  return (
+    <DashboardContainer>
+      <ChartTitle>Visactor Dashboard</ChartTitle>
+      <LineChart width={500} height={300} data={data}>
+        <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+        <CartesianGrid stroke="#ccc" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+      </LineChart>
+    </DashboardContainer>
+  );
+};
+
+export default VisactorDashboard;
+
+
+
+===== Archivo: src/components/ButtonIA/FloatingChatButton.tsx =====
+"use client";
+
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import { useThemeContext } from "../ThemeContext";
+// Si usas Next.js, puedes usar useRouter para ocultar el botón en ciertas rutas:
+import { usePathname } from "next/navigation";
+
+// ===================== Tipado de Mensajes =====================
+interface Message {
+  sender: "user" | "bot";
+  text: string;
+}
+
+// ===================== Preguntas Predefinidas =====================
+const predefinedQueries = {
+  "Gestión de Ítems": {
+    "Consultas": [
+      "Quiero saber el ítem con SKU-001",
+      "Necesito información del producto Producto A",
+      "Consulta el ítem ABC",
+    ],
+    "Listados": [
+      "Muéstrame todos los productos",
+      "Lista todos los ítems",
+      "Enséñame el catálogo completo",
+    ],
+    "Creación": [
+      "Crea un producto con SKU 504-002, nombre Sudadera, descripción Sudadera grande, precio 100 y stock 20",
+    ],
+    "Edición": [
+      "Edita el producto SKU-001 y cambia su nombre a ProductoBotTest",
+      "Modifica el ítem Producto A y actualiza su precio a 29.99 y stock a 100",
+    ],
+    "Eliminación": [
+      "Elimina el producto Zapatos",
+      "Borra el ítem Producto B",
+    ],
+  },
+  "Informes Gerenciales": {
+    "Inventario": [
+      "¿Cuál es el valor total de todos los productos?",
+      "¿Cuántos productos hay en total?",
+      "¿Cuántas unidades hay en total?",
+    ],
+    "Stock": [
+      "¿Cuál es el producto con más stock?",
+      "¿Cuál es el producto con menos stock?",
+    ],
+    "Precios": [
+      "¿Cuál es el producto con mayor precio?",
+      "¿Cuál es el producto con menor precio?",
+      "¿Cuál es el precio promedio de los productos?",
+    ],
+    "Valoración": [
+      "¿Cuál es el producto más valioso del inventario?",
+    ],
+  },
+  "Otras preguntas": {
+    "Básicas": [
+      "Hola",
+      "¿Eres un bot?",
+      "¿Cómo te llamas?",
+      "Adiós",
+    ],
+  },
+};
+
+// ===================== Componente Principal: TitanChatButton =====================
+export default function TitanChatButton() {
+  // Para saber la ruta actual (Next.js). Si NO usas Next, omite esto.
+  const pathname = usePathname();
+
+  // Ejemplo: ocultar el botón si la ruta es "/login" o "/titan"
+  if (pathname === "/login" || pathname === "/titan") {
+    return null; // No renderiza nada
+  }
+
+  const { theme } = useThemeContext();
+  const [chatOpen, setChatOpen] = useState(false);
+
+  // Reiniciar la conversación
+  const handleRestart = () => {
+    localStorage.removeItem("chatMessages");
+    setChatOpen(false);
+  };
+
+  return (
+    <>
+      <FloatingButton onClick={() => setChatOpen(!chatOpen)}>
+        TITAN
+      </FloatingButton>
+
+      {chatOpen && (
+        <ChatWindow onClose={() => setChatOpen(false)} onRestart={handleRestart} />
+      )}
+    </>
+  );
+}
+
+// ===================== Ventana de Chat (Misma lógica de Titan) =====================
+const ChatWindow: React.FC<{ onClose: () => void; onRestart: () => void }> = ({
+  onClose,
+  onRestart,
+}) => {
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem("chatMessages");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            sender: "bot",
+            text:
+              "¡Hola, soy Titan! Estoy aquí para ayudarte con la plataforma APOLO. ¿En qué puedo ayudarte?",
+          },
+        ];
+  });
+  const [input, setInput] = useState("");
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Guardar conversación en localStorage
+  useEffect(() => {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }, [messages]);
+
+  // Enviar mensaje al backend (Rasa, etc.)
+  const sendMessage = async (msg: string) => {
+    // Agregar mensaje del usuario
+    setMessages((prev) => [...prev, { sender: "user", text: msg }]);
+
+    try {
+      // Ajusta la URL a la de tu servidor Rasa
+      const response = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender: "usuario", message: msg }),
+      });
+      const data = await response.json();
+
+      data.forEach((botResp: { recipient_id: string; text: string }) => {
+        setMessages((prev) => [...prev, { sender: "bot", text: botResp.text }]);
+      });
+    } catch (error) {
+      console.error("Error al enviar el mensaje a Rasa:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Error de conexión con el chatbot." },
+      ]);
+    }
+  };
+
+  const handleSend = () => {
+    if (input.trim() !== "") {
+      sendMessage(input.trim());
+      setInput("");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  // Copia la consulta al input al hacer clic en un botón
+  const handlePredefinedClick = (query: string) => {
+    setInput(query);
+  };
+
+  // Renderiza categorías y subcategorías de preguntas
+  const renderPredefinedQueries = () => {
+    return Object.entries(predefinedQueries).map(([category, subcats]) => (
+      <CategoryContainer key={category}>
+        <CategoryTitle>{category}</CategoryTitle>
+        {Object.entries(subcats).map(([subcategory, queries]) => (
+          <SubcategoryContainer key={subcategory}>
+            <SubcategoryTitle>{subcategory}</SubcategoryTitle>
+            <ButtonGroup>
+              {queries.map((query, index) => (
+                <QueryButton key={index} onClick={() => handlePredefinedClick(query)}>
+                  {query}
+                </QueryButton>
+              ))}
+            </ButtonGroup>
+          </SubcategoryContainer>
+        ))}
+      </CategoryContainer>
+    ));
+  };
+
+  return (
+    <ChatContainer>
+      <ChatHeader>
+        <h3>TITAN</h3>
+        <HeaderButtons>
+          <HelpButton onClick={() => setShowHelp((prev) => !prev)}>Ayuda</HelpButton>
+          <RestartButton onClick={onRestart}>Reiniciar</RestartButton>
+          <CloseButton onClick={onClose}>X</CloseButton>
+        </HeaderButtons>
+      </ChatHeader>
+
+      {showHelp && (
+        <HelpWrapper>
+          <HelpContainer>
+            <HelpTitle>Preguntas Disponibles</HelpTitle>
+            <HelpInfo>
+              APOLO es una plataforma integral para la gestión de inventarios y
+              operaciones logísticas. Con Titan, puedes gestionar ítems
+              (consultar, crear, editar, eliminar) y obtener informes gerenciales.
+            </HelpInfo>
+            {renderPredefinedQueries()}
+          </HelpContainer>
+        </HelpWrapper>
+      )}
+
+      <ChatMessages>
+        {messages.map((msg, index) => (
+          <MessageBubble key={index} $isUser={msg.sender === "user"}>
+            {msg.text}
+          </MessageBubble>
+        ))}
+      </ChatMessages>
+
+      <ChatInputContainer>
+        <ChatInput
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Escribe tu mensaje..."
+        />
+        <SendButton onClick={handleSend}>Enviar</SendButton>
+      </ChatInputContainer>
+    </ChatContainer>
+  );
+};
+
+/* ===================== Styled Components ===================== */
+
+// Botón flotante que dice "TITAN"
+const FloatingButton = styled.button`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  outline: none;
+  height: 60px;
+  width: 60px;
+  border: none;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #2e67f8;
+  cursor: pointer;
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+// Contenedor principal del Chat
+const ChatContainer = styled.div`
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 400px;
+  height: 550px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  z-index: 2100;
+`;
+
+// Header del Chat
+const ChatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2e67f8;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+`;
+
+// Botones en el Header
+const HeaderButtons = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const HelpButton = styled.button`
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const RestartButton = styled.button`
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+`;
+
+const CloseButton = styled.button`
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+`;
+
+// Sección de Ayuda
+const HelpWrapper = styled.div`
+  padding: 0 1rem;
+`;
+
+const HelpContainer = styled.div`
+  background: #f0f0f0;
+  color: #333;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+`;
+
+const HelpTitle = styled.h4`
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+`;
+
+const HelpInfo = styled.p`
+  margin: 0 0 0.5rem 0;
+  font-size: 0.8rem;
+`;
+
+const CategoryContainer = styled.div`
+  margin-bottom: 0.5rem;
+`;
+
+const CategoryTitle = styled.h5`
+  margin: 0 0 0.3rem 0;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #555;
+`;
+
+const SubcategoryContainer = styled.div`
+  margin-bottom: 0.3rem;
+`;
+
+const SubcategoryTitle = styled.p`
+  margin: 0 0 0.2rem 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #777;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+`;
+
+const QueryButton = styled.button`
+  background: #2e67f8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #1f4cbc;
+  }
+`;
+
+// Área de mensajes
+const ChatMessages = styled.div`
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: #f5f5f5;
+`;
+
+// Burbuja de mensaje
+const MessageBubble = styled.div<{ $isUser: boolean }>`
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: ${(props) => (props.$isUser ? "blue" : "#333")};
+  text-align: ${(props) => (props.$isUser ? "right" : "left")};
+  padding: 0.5rem;
+  background: ${(props) => (props.$isUser ? "#e0f7fa" : "#fff")};
+  border-radius: 8px;
+  max-width: 80%;
+  align-self: ${(props) => (props.$isUser ? "flex-end" : "flex-start")};
+`;
+
+// Input + Botón "Enviar"
+const ChatInputContainer = styled.div`
+  display: flex;
+  padding: 0.5rem;
+  border-top: 1px solid #ccc;
+`;
+
+const ChatInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  outline: none;
+  color: black;
+  background: #fff;
+`;
+
+const SendButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: #2e67f8;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 0.5rem;
+`;
+
+
+
+===== Archivo: src/components/Header/DashboardHeader.tsx =====
+"use client";
+
+import React, { useState } from "react";
+import styled from "styled-components";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import IconButton from "@mui/material/IconButton";
+import { useAuth } from "@/context/AuthContext";
+import EditProfileModal from "./EditProfileModal";
+
+// INTERFAZ que incluye currentTheme
+interface DashboardHeaderProps {
+  toggleDrawer: () => void;
+  drawerOpen: boolean;
+  sidebarWidth: number;
+  onThemeChange: (index: number) => void;  // si necesitas el index para cambiar tema
+  currentTheme: number;                    // ← NUEVA propiedad
+}
+
+// Estilos
+const HeaderContainer = styled.header<{ $sidebarWidth: number }>`
+  position: fixed;
+  top: 0;
+  left: ${({ $sidebarWidth }) => $sidebarWidth}px;
+  width: calc(100% - ${({ $sidebarWidth }) => $sidebarWidth}px);
+  height: 60px;
+  background: linear-gradient(45deg, #8391ff, #a5c1ff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: left 0.3s ease, width 0.3s ease;
+  padding: 0 1rem;
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const UserPill = styled.div`
+  display: flex;
+  align-items: center;
+  border-radius: 30px;
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(45deg, #6adbef, #5ce1e6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+`;
+
+const AvatarPlaceholder = styled.div`
+  width: 32px;
+  height: 32px;
+  background: #ccc;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+`;
+
+const UserName = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+`;
+
+const ThemeCircle = styled.div`
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+`;
+
+// Componente principal
+export default function DashboardHeader({
+  toggleDrawer,
+  drawerOpen,
+  sidebarWidth,
+  onThemeChange,
+  currentTheme,
+}: DashboardHeaderProps) {
+  const { user } = useAuth(); // Hook para obtener el usuario (si aplica)
+  const [openProfile, setOpenProfile] = useState(false);
+
+  const handleUserClick = () => {
+    console.log("Clic en usuario. user =", user);
+    setOpenProfile(true);
+  };
+
+  const handleProfileClose = () => {
+    setOpenProfile(false);
+  };
+
+  return (
+    <>
+      <HeaderContainer $sidebarWidth={sidebarWidth}>
+        {/* Sección Izquierda */}
+        <LeftSection>
+          <IconButton sx={{ color: "#fff" }} onClick={toggleDrawer}>
+            {drawerOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+          </IconButton>
+        </LeftSection>
+
+        {/* Sección Derecha */}
+        <RightSection>
+          <UserPill onClick={handleUserClick}>
+            <AvatarPlaceholder />
+            <UserName>{user?.username || "Usuario"}</UserName>
+
+            {/* Bolita para cambiar tema */}
+            <ThemeCircle
+              onClick={(e) => {
+                e.stopPropagation(); 
+                // Ejemplo: ciclar el tema
+                onThemeChange((currentTheme + 1) % 3);
+              }}
+            />
+          </UserPill>
+        </RightSection>
+      </HeaderContainer>
+
+      {/* Modal de perfil si openProfile = true */}
+      {openProfile && (
+        <EditProfileModal
+          user={user || { id: "", username: "Usuario", email: "", role: "" }}
+          onClose={handleProfileClose}
+        />
+      )}
+    </>
+  );
+}
+
+
+
+===== Archivo: src/components/Header/Header.tsx =====
+import React from "react";
+import styled from "styled-components";
+
+// Contenedor principal del header con el mismo gradiente que el formulario
+const HeaderContainer = styled.header`
+  background: linear-gradient(45deg, #6adbef, #5ce1e6);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+// Contenedor para el logo y el nombre de la app
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+
+// Nombre de la app con letras más robustas y contorno en las letras
+const AppName = styled.h1`
+  font-size: 28px;
+  font-weight: 800; /* Fuente más gruesa */
+  color: #fff;
+  margin: 0;
+  -webkit-text-stroke: 2px #fffff; /* Contorno más grueso */
+  letter-spacing: 2px;
+`;
+
+// Imagen para el logo de soporte técnico
+const SupportLogo = styled.img`
+  height: 40px;
+  width: auto;
+`;
+
+const Header: React.FC = () => {
+  return (
+    <HeaderContainer>
+      <LogoContainer>
+        <AppName>APOLOWARE</AppName>
+      </LogoContainer>
+      {/* Ajusta la ruta del logo de soporte técnico */}
+    </HeaderContainer>
+  );
+};
+
+export default Header;
+
+
+
+===== Archivo: src/components/Header/EditProfileModal.tsx =====
+"use client";
+
+import React, { useRef, useState } from "react";
+import styled from "styled-components";
+import EditIcon from "@mui/icons-material/Edit";
+
+/* Ajusta la interfaz 'User' a tu modelo real */
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  phone?: string;
+  role: string;
+  profileImage?: string; // nombre del archivo de la imagen
+}
+
+interface EditProfileModalProps {
+  user: User;
+  onClose: () => void;
+}
+
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ user, onClose }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [username, setUsername] = useState(user.username);
+  const [email, setEmail] = useState(user.email);
+  const [phone, setPhone] = useState(user.phone || "");
+  const [role, setRole] = useState(user.role);
+  const [password, setPassword] = useState("");
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("role", role);
+    if (password) formData.append("password", password);
+    if (profileImage) formData.append("profileImage", profileImage);
+
+    try {
+      const res = await fetch(`http://localhost:3000/users/${user.id}`, {
+        method: "PATCH",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Actualiza localStorage si el backend devuelve el user
+        localStorage.setItem("user", JSON.stringify(data));
+        onClose();
+        window.location.reload();
+      } else {
+        console.error("Error actualizando perfil:", res.status, data);
+      }
+    } catch (error) {
+      console.error("Error en la petición:", error);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImage(e.target.files[0]);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <ModalOverlay>
+      <ModalContainer>
+        <HeaderSection>
+          <AvatarContainer onClick={handleAvatarClick}>
+            <ProfileLogo
+              src={
+                user.profileImage
+                  ? `http://localhost:3000/uploads/${user.profileImage}`
+              }
+              alt={user.username}
+            />
+            <EditIconContainer>
+              <EditIcon style={{ fontSize: "1.2rem", color: "#fff" }} />
+            </EditIconContainer>
+            <HiddenFileInput
+              ref={fileInputRef}
+              type="file"
+              onChange={handleImageChange}
+              accept="image/png, image/jpeg, image/jpg"
+            />
+          </AvatarContainer>
+        </HeaderSection>
+
+        {/* Puedes mostrar el nombre debajo de la imagen, si quieres que se parezca más al frame */}
+        {/* <NameText>{username}</NameText> */}
+
+        <Form onSubmit={handleSubmit}>
+          <InputGroup>
+            <label>Nombre</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </InputGroup>
+          <InputGroup>
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </InputGroup>
+          <InputGroup>
+            <label>Teléfono</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </InputGroup>
+          <InputGroup>
+            <label>Rol</label>
+            <input
+              type="text"
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            />
+          </InputGroup>
+          <InputGroup>
+            <label>Nueva contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </InputGroup>
+
+          <ButtonGroup>
+            <SubmitButton type="submit">Guardar</SubmitButton>
+            <CancelButton type="button" onClick={onClose}>
+              Cancelar
+            </CancelButton>
+          </ButtonGroup>
+        </Form>
+      </ModalContainer>
+    </ModalOverlay>
+  );
+};
+
+export default EditProfileModal;
+
+// ======================= Styled Components =======================
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+`;
+
+const ModalContainer = styled.div`
+  background: #fff;          /* Fondo blanco para simular tarjeta */
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #000;              /* Texto en negro */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const HeaderSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const AvatarContainer = styled.div`
+  position: relative;
+  cursor: pointer;
+`;
+
+const ProfileLogo = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+`;
+
+const EditIconContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  padding: 3px;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+/* Si deseas mostrar el nombre debajo de la imagen, usa algo así:
+const NameText = styled.h2`
+  margin-top: 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+`;
+*/
+
+const Form = styled.form`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+`;
+
+const InputGroup = styled.div`
+  margin-bottom: 1rem;
+  
+  label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+    color: #333;
+  }
+
+  input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 0.4rem 0;
+    font-size: 1rem;
+    color: #000;
+
+    &:focus {
+      outline: none;
+      border-bottom: 1px solid #000;
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const SubmitButton = styled.button`
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #2e67f8; 
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #1f4cbc;
+  }
+`;
+
+const CancelButton = styled.button`
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #d1d5db;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #9ca3af;
+  }
+`;
+
+
+
