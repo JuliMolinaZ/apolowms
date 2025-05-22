@@ -21,6 +21,22 @@ async function main() {
         phone: '0987654321',
         profileImage: 'operator.png',
       },
+      {
+        username: 'manager',
+        email: 'manager@example.com',
+        password: 'hashedpassword',
+        role: 'manager',
+        phone: '5551234567',
+        profileImage: 'manager.png',
+      },
+      {
+        username: 'viewer',
+        email: 'viewer@example.com',
+        password: 'hashedpassword',
+        role: 'viewer',
+        phone: '5559876543',
+        profileImage: 'viewer.png',
+      },
     ],
     skipDuplicates: true,
   });
@@ -30,6 +46,8 @@ async function main() {
     data: [
       { orderNumber: 'ORD-001', quantity: 10 },
       { orderNumber: 'ORD-002', quantity: 20 },
+      { orderNumber: 'ORD-003', quantity: 15 },
+      { orderNumber: 'ORD-004', quantity: 5 },
     ],
     skipDuplicates: true,
   });
@@ -85,6 +103,8 @@ async function main() {
     data: [
       { receiptId: 'RCPT-001', location: 'LOC-001', quantity: 25 },
       { receiptId: 'RCPT-002', location: 'LOC-002', quantity: 15 },
+      { receiptId: 'RCPT-003', location: 'LOC-001', quantity: 40 },
+      { receiptId: 'RCPT-004', location: 'LOC-002', quantity: 5 },
     ],
     skipDuplicates: true,
   });
@@ -105,6 +125,20 @@ async function main() {
         description: 'Descripción del producto B',
         price: 19.99,
         stock: 50,
+      },
+      {
+        sku: 'SKU-003',
+        name: 'Producto C',
+        description: 'Descripción del producto C',
+        price: 14.5,
+        stock: 75,
+      },
+      {
+        sku: 'SKU-004',
+        name: 'Producto D',
+        description: 'Descripción del producto D',
+        price: 5.99,
+        stock: 200,
       },
     ],
     skipDuplicates: true,

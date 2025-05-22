@@ -37,8 +37,11 @@ This will build the backend and frontend images and start MySQL. The backend con
 After the containers are running, seed the database from inside the backend container:
 
 ```bash
-docker-compose exec backend npx ts-node prisma/seed.ts
+docker-compose exec backend npx prisma db seed
 ```
+
+You can also run the same command locally from the `apps/backend` folder if you
+are not using Docker.
 
 This script populates the MySQL database with initial demo data used by the applications.
 
