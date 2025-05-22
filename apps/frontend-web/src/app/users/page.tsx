@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { API_URL } from "../../lib/config";
 
 interface User {
   id: string;
-  name: string;
+  name?: string;
   username: string;
   email: string;
   phone?: string;
@@ -13,35 +14,35 @@ interface User {
   image?: string; // Propiedad para la imagen
 }
 
-// Datos de ejemplo. En tu caso, vendrán del fetch a tu API
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "User001",
-    username: "User001",
-    email: "test@test.com",
-    phone: "3184553490",
-    role: "OPERATOR",
-    image: "/images/user1.jpg", // Ruta a la imagen en public/images
-  },
-  {
-    id: "2",
-    name: "User002",
-    username: "User002",
-    email: "user2@test.com",
-    phone: "3201234567",
-    role: "ADMIN",
-    image: "/images/user2.jpg", // Ruta a la imagen en public/images
-  },
-];
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Simulación de fetch. En tu caso, haz la llamada real:
-    setUsers(mockUsers);
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`${API_URL}/users`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const mapped = data.map((u: any) => ({
+            id: String(u.id),
+            name: u.name || u.username,
+            username: u.username,
+            email: u.email,
+            phone: u.phone,
+            role: u.role,
+            image: u.profileImage ? `${API_URL}/uploads/${u.profileImage}` : undefined,
+          }));
+          setUsers(mapped);
+        } else {
+          console.error('La respuesta de usuarios no es un array:', data);
+        }
+      } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+      }
+    };
+    fetchUsers();
   }, []);
 
   const totalUsers = users.length;
@@ -50,9 +51,18 @@ const UsersPage: React.FC = () => {
     setEditingUser(user);
   };
 
-  const handleDelete = (user: User) => {
-    console.log("Eliminar usuario:", user.id);
-    // Aquí tu lógica para eliminar
+  const handleDelete = async (user: User) => {
+    if (!confirm('¿Eliminar usuario?')) return;
+    try {
+      const res = await fetch(`${API_URL}/users/${user.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        console.error('Error al eliminar usuario:', await res.text());
+        return;
+      }
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+    }
   };
 
   const handleCloseEdit = () => {
@@ -144,9 +154,19 @@ const EditUserView: React.FC<EditUserViewProps> = ({ user, onClose }) => {
   const [phone, setPhone] = useState(user.phone || "");
   const [role, setRole] = useState(user.role);
 
-  const handleSave = () => {
-    console.log("Guardando cambios...", { name, username, phone, role });
-    // Lógica para actualizar
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`${API_URL}/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, phone, role }),
+      });
+      if (!res.ok) {
+        console.error('Error al actualizar usuario:', await res.text());
+      }
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+    }
     onClose();
   };
 
