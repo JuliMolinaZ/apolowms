@@ -3,54 +3,22 @@ const prisma = new PrismaClient();
 
 async function main() {
   // Insertar usuarios de prueba
-  await prisma.user.createMany({
-    data: [
-      {
-        username: 'admin',
-        email: 'admin@example.com',
-        password: 'hashedpassword', // Recuerda usar contraseñas hasheadas en producción
-        role: 'admin',
-        phone: '1234567890',
-        profileImage: 'admin.png',
-      },
-      {
-        username: 'operator',
-        email: 'operator@example.com',
-        password: 'hashedpassword',
-        role: 'operator',
-        phone: '0987654321',
-        profileImage: 'operator.png',
-      },
-      {
-        username: 'manager',
-        email: 'manager@example.com',
-        password: 'hashedpassword',
-        role: 'manager',
-        phone: '5551234567',
-        profileImage: 'manager.png',
-      },
-      {
-        username: 'viewer',
-        email: 'viewer@example.com',
-        password: 'hashedpassword',
-        role: 'viewer',
-        phone: '5559876543',
-        profileImage: 'viewer.png',
-      },
-    ],
-    skipDuplicates: true,
-  });
+  const usersData = Array.from({ length: 50 }, (_, i) => ({
+    username: `user${i + 1}`,
+    email: `user${i + 1}@example.com`,
+    password: 'hashedpassword',
+    role: i % 3 === 0 ? 'admin' : i % 3 === 1 ? 'operator' : 'viewer',
+    phone: `555000${i}`,
+    profileImage: `user${i + 1}.png`,
+  }));
+  await prisma.user.createMany({ data: usersData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Picking
-  await prisma.picking.createMany({
-    data: [
-      { orderNumber: 'ORD-001', quantity: 10 },
-      { orderNumber: 'ORD-002', quantity: 20 },
-      { orderNumber: 'ORD-003', quantity: 15 },
-      { orderNumber: 'ORD-004', quantity: 5 },
-    ],
-    skipDuplicates: true,
-  });
+  const pickingData = Array.from({ length: 20 }, (_, i) => ({
+    orderNumber: `ORD-${(i + 1).toString().padStart(3, '0')}`,
+    quantity: Math.floor(Math.random() * 20) + 1,
+  }));
+  await prisma.picking.createMany({ data: pickingData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Slotting
   await prisma.slotting.createMany({
@@ -99,50 +67,22 @@ async function main() {
   });
 
   // Insertar datos de prueba para el módulo Putaway
-  await prisma.putaway.createMany({
-    data: [
-      { receiptId: 'RCPT-001', location: 'LOC-001', quantity: 25 },
-      { receiptId: 'RCPT-002', location: 'LOC-002', quantity: 15 },
-      { receiptId: 'RCPT-003', location: 'LOC-001', quantity: 40 },
-      { receiptId: 'RCPT-004', location: 'LOC-002', quantity: 5 },
-    ],
-    skipDuplicates: true,
-  });
+  const putawayData = Array.from({ length: 20 }, (_, i) => ({
+    receiptId: `RCPT-${(i + 1).toString().padStart(3, '0')}`,
+    location: i % 2 === 0 ? 'LOC-001' : 'LOC-002',
+    quantity: Math.floor(Math.random() * 50) + 1,
+  }));
+  await prisma.putaway.createMany({ data: putawayData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Item
-  await prisma.item.createMany({
-    data: [
-      {
-        sku: 'SKU-001',
-        name: 'Producto A',
-        description: 'Descripción del producto A',
-        price: 9.99,
-        stock: 100,
-      },
-      {
-        sku: 'SKU-002',
-        name: 'Producto B',
-        description: 'Descripción del producto B',
-        price: 19.99,
-        stock: 50,
-      },
-      {
-        sku: 'SKU-003',
-        name: 'Producto C',
-        description: 'Descripción del producto C',
-        price: 14.5,
-        stock: 75,
-      },
-      {
-        sku: 'SKU-004',
-        name: 'Producto D',
-        description: 'Descripción del producto D',
-        price: 5.99,
-        stock: 200,
-      },
-    ],
-    skipDuplicates: true,
-  });
+  const itemsData = Array.from({ length: 100 }, (_, i) => ({
+    sku: `SKU-${(i + 1).toString().padStart(3, '0')}`,
+    name: `Producto ${i + 1}`,
+    description: `Descripción del producto ${i + 1}`,
+    price: parseFloat((Math.random() * 100).toFixed(2)),
+    stock: Math.floor(Math.random() * 200) + 1,
+  }));
+  await prisma.item.createMany({ data: itemsData, skipDuplicates: true });
 }
 
 main()

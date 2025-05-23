@@ -611,15 +611,8 @@ const ErrorMessage = styled.div`
 `;
 
 const PrimaryButton = styled.button`
-  padding: 0.6rem;
+  @apply bg-primary text-white font-bold text-sm py-2 px-4 rounded-full transition-opacity;
   border: none;
-  border-radius: 20px;
-  background: #5ed7e8;
-  color: #fff;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.3s;
   &:hover {
     opacity: 0.9;
   }
@@ -632,18 +625,10 @@ const ButtonsRow = styled.div`
 `;
 
 const SecondaryBtn = styled.button`
-  flex: 1;
-  padding: 0.6rem;
-  border: 2px solid #5ed7e8;
-  border-radius: 20px;
+  @apply flex-1 border-2 border-primary text-primary font-bold text-sm py-2 px-4 rounded-full transition-colors;
   background: transparent;
-  color: #5ed7e8;
-  font-weight: bold;
-  font-size: 14px;
-  cursor: pointer;
-  transition: 0.3s;
   &:hover {
-    background: #e2fbfd;
+    background: theme('colors.primary' / 10%);
   }
 `;
 
