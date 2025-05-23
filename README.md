@@ -32,6 +32,14 @@ The `docker-compose.yml.example` file provides a development stack with MySQL, t
 
 This will build the backend and frontend images and start MySQL. The backend container exposes port `3000` and the web frontend runs on port `3001`.
 
+## Quick demo steps
+
+1. Clone this repository
+2. Copy each `.env.example` to `.env` inside `apps/backend`, `apps/frontend-web` and `apps/frontend-mobile`
+3. Run `docker-compose up --build`
+4. In another terminal run `docker-compose exec backend npm run seed`
+5. Access the API at `http://localhost:3000` and the web UI at `http://localhost:3001`
+
 ## Seeding the database
 
 After the containers are running, seed the database from inside the backend container:
