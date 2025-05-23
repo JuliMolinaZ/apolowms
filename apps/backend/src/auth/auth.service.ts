@@ -13,18 +13,12 @@ import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuthService {
-
-  private readonly jwtSecret = 'your_jwt_secret';
+  private readonly jwtSecret: string;
 
   constructor(
     private readonly notificationsService: NotificationsService,
     private readonly prisma: PrismaClient,
-  ) {}
-=======
-  private prisma = new PrismaClient();
-  private readonly jwtSecret: string;
-
-  constructor(private readonly notificationsService: NotificationsService) {
+  ) {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
       throw new Error('JWT_SECRET environment variable is missing');

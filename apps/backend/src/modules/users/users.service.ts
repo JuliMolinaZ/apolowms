@@ -5,7 +5,7 @@ import { UpdateUserDto } from '../../auth/dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  private prisma = new PrismaClient();
+  constructor(private readonly prisma: PrismaClient) {}
 
   // Retorna todos los usuarios
   async getUsers() {
