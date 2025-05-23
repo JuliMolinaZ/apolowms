@@ -10,7 +10,9 @@ RUN npm run setup && npm rebuild bcrypt --update-binary
 COPY . .
 # Ejecutamos lint y tests para validar
 RUN npm run lint && npm test
-# Compilamos la aplicacion
+
+RUN npm run lint && npm test
+
 RUN npm run build
 
 # Stage 2: imagen liviana para produccion

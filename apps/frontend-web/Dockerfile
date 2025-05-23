@@ -10,7 +10,10 @@ RUN npm run setup
 COPY . .
 # Ejecutamos lint y pruebas antes de compilar
 RUN npm run lint && npm test
-# Construimos la aplicacion
+
+
+RUN npm run lint && npm test
+
 RUN npm run build
 
 # Stage 2: contenedor liviano para producción
