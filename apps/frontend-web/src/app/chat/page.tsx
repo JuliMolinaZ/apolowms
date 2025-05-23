@@ -52,13 +52,8 @@ import {
 import { API_URL } from "@/lib/config";
 import { useSocket } from "@/context/socketContext";
 import { useAuth } from "@/context/AuthContext";
-
-interface User {
-  id: number;
-  username: string;
-  isOnline: boolean;
-  profileImage?: string;
-}
+import { ChatUser } from "../../types/user";
+import Sidebar from "@/components/Sidebar/Sidebar";
 
 interface ChatMessage {
   room: string;
@@ -74,8 +69,8 @@ export default function ChatPage() {
   const { socket } = useSocket();
   const { user } = useAuth();
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<ChatUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [room, setRoom] = useState<string>("");
   const [showProfileCard, setShowProfileCard] = useState(false);
@@ -120,7 +115,7 @@ export default function ChatPage() {
     };
   }, [socket, user, selectedUser]);
 
-  const handleSelectUser = (user: User) => {
+  const handleSelectUser = (user: ChatUser) => {
     setSelectedUser(user);
     setShowProfileCard(false);
   };
@@ -161,7 +156,7 @@ export default function ChatPage() {
 
   return (
     <Container>
-      {/* Header estilo “segunda imagen” */}
+      {/* Header estilo "segunda imagen" */}
       <Header>
         {/* Círculo degradado con ícono */}
         <HeaderIconCircle>
@@ -301,7 +296,16 @@ export default function ChatPage() {
       {callType && (
         <CallModal
           callType={callType}
-          user={selectedUser}
+          user={
+            selectedUser
+              ? {
+                  ...selectedUser,
+                  id: typeof selectedUser.id === "string" ? parseInt(selectedUser.id, 10) : selectedUser.id,
+                  name: selectedUser.username,
+                  avatar: selectedUser.profileImage || "/logos/default-avatar.png",
+                }
+              : null
+          }
           onClose={handleCloseCall}
         />
       )}

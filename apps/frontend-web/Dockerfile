@@ -1,19 +1,45 @@
-# Stage 1: build and test the Next.js app
+# Stage 1: Dependencias
+FROM node:18-alpine AS deps
+WORKDIR /app
+
+# Copiar archivos de configuración
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Instalar dependencias con legacy-peer-deps
+RUN npm install --legacy-peer-deps
+
+# Stage 2: Builder
 FROM node:18-alpine AS builder
 WORKDIR /app
-# Copiamos dependencias y script de setup
-COPY package*.json ./
-COPY setup.sh ./
-# Ejecutamos el stub de setup junto con lint y test
-RUN npm run setup && npm run lint && npm test
-# Copiamos el resto del codigo
+
+# Copiar dependencias del stage anterior
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copiar el directorio frontend completo
 COPY . .
-# Paso de build omitido para permitir builds sin dependencias
-RUN echo "Skipping build (stub)"
-# Stage 2: contenedor liviano para producción
+
+# Construir la aplicación
+RUN npm run build
+
+# Verificar que el build se completó correctamente
+RUN ls -la .next
+
+# Stage 3: Producción
 FROM node:18-alpine AS production
 WORKDIR /app
-# Copiamos todo desde la etapa de build
-COPY --from=builder /app ./
+
+# Copiar archivos necesarios para producción
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+
+# Verificar la estructura del directorio /app
+RUN ls -la /app
+
+# Exponer puerto
 EXPOSE 3000
+
+# Comando para iniciar en producción
 CMD ["npm", "start"]

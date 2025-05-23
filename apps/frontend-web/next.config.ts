@@ -1,13 +1,10 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  output: 'standalone',
   images: {
     unoptimized: true, // Deshabilita la optimización de imágenes
   },
-  experimental: {
-    appDir: true,
-  } as any,
   compiler: {
     styledComponents: true,
   },
@@ -22,7 +19,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+        destination: 'http://localhost:3000/api/:path*',
       },
     ];
   },

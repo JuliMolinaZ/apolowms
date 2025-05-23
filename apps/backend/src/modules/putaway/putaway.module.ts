@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PutawayController } from './putaway.controller';
 import { PutawayService } from './putaway.service';
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [PrismaModule],

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import * as XLSX from "xlsx";
 import dynamic from "next/dynamic";
-import { API_URL } from "../lib/config";
+import { API_URL } from "../../lib/config";
 import {
   ResponsiveContainer,
   AreaChart,
