@@ -8,6 +8,8 @@ RUN npm install && npm rebuild bcrypt --update-binary
 
 COPY . .
 
+RUN npm run lint && npm test
+
 RUN npm run build
 
 EXPOSE 3000

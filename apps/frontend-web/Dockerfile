@@ -13,6 +13,8 @@ RUN npm install
 # Copia el resto del código
 COPY . .
 
+RUN npm run lint && npm test
+
 # Construye la aplicación Next.js
 RUN npm run build
 
