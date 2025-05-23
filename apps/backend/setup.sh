@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-# Instala dependencias de produccion y desarrollo
-npm ci --include=dev
+# Instala dependencias y genera lockfile
+npm install

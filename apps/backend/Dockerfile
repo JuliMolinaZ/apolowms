@@ -5,12 +5,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY setup.sh ./
 # Instalamos dependencias de desarrollo y produccion
-RUN npm run setup && npm rebuild bcrypt --update-binary
+RUN npm install && npm rebuild bcrypt --update-binary
 # Copiamos el resto del codigo
 COPY . .
 # Ejecutamos lint y tests para validar
-RUN npm run lint && npm test
-
 RUN npm run lint && npm test
 
 RUN npm run build
