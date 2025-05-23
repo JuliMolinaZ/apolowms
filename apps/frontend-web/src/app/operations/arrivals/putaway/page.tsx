@@ -15,6 +15,13 @@ import {
 import { FaBoxOpen, FaPlus, FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 import { API_URL } from "../../../../lib/config";
 
+interface User {
+  id: number;
+  username: string;
+  isOnline: boolean;
+  profileImage?: string;
+}
+
 interface Putaway {
   id: number;
   receiptId: string;

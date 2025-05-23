@@ -6,7 +6,7 @@ import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { ThemeProvider as StyledThemeProvider } from "styled-components";
 import styled, { keyframes } from "styled-components";
 import DashboardHeader from "@/components/Header/DashboardHeader";
-import { Sidebar } from "@/components/Sidebar/Sidebar";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import { themes } from "@/theme/themes"; // Sin getDailyTheme
 
 const drawerOpenWidth = 200;
