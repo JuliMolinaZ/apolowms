@@ -5,17 +5,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY setup.sh ./
 # Instalamos dependencias de desarrollo y produccion
-RUN npm run setup
+RUN npm install
 # Copiamos el resto del codigo
 COPY . .
 # Ejecutamos lint y pruebas antes de compilar
 RUN npm run lint && npm test
-
-
-RUN npm run lint && npm test
-
 RUN npm run build
-
 # Stage 2: contenedor liviano para producción
 FROM node:18-alpine AS production
 WORKDIR /app
