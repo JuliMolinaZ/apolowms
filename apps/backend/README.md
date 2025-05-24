@@ -30,6 +30,7 @@
 
 ```bash
 $ yarn install
+$ npm install --save-dev jest ts-jest @types/jest @nestjs/testing supertest @types/supertest
 ```
 
 ## Compile and run the project
