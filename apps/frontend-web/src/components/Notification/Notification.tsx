@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const NotificationContainer = styled.div`
   position: fixed;
@@ -39,38 +40,9 @@ interface NotificationType {
 }
 
 const Notification: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationType[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const notifications = useNotifications();
 
-  // Este efecto se asegura de que el componente se renderice solo en cliente.
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Ejemplo: se simula agregar una notificación de éxito a los 2 segundos.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const newNotif: NotificationType = {
-        message: "Operación exitosa",
-        type: "success",
-        timestamp: new Date().getTime(),
-      };
-      setNotifications(prev => [...prev, newNotif]);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Cada segundo se remueven las notificaciones que tengan más de 5 segundos.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNotifications(prev =>
-        prev.filter(notif => new Date().getTime() - notif.timestamp < 5000)
-      );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!isMounted) return null;
+  if (typeof window === 'undefined') return null;
 
   return ReactDOM.createPortal(
     <NotificationContainer>
