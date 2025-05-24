@@ -14,7 +14,7 @@ async function main() {
   await prisma.user.createMany({ data: usersData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Picking
-  const pickingData = Array.from({ length: 20 }, (_, i) => ({
+  const pickingData = Array.from({ length: 5 }, (_, i) => ({
     orderNumber: `ORD-${(i + 1).toString().padStart(3, '0')}`,
     quantity: Math.floor(Math.random() * 20) + 1,
   }));
@@ -30,13 +30,12 @@ async function main() {
   });
 
   // Insertar datos de prueba para el módulo Packing
-  await prisma.packing.createMany({
-    data: [
-      { packageId: 'PKG-001', itemsCount: 5, status: 'Pending' },
-      { packageId: 'PKG-002', itemsCount: 3, status: 'Completed' },
-    ],
-    skipDuplicates: true,
-  });
+  const packingData = pickingData.map((p, i) => ({
+    packageId: `PKG-${(i + 1).toString().padStart(3, '0')}`,
+    itemsCount: p.quantity,
+    status: 'Pending',
+  }));
+  await prisma.packing.createMany({ data: packingData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Location
   await prisma.location.createMany({
@@ -67,15 +66,15 @@ async function main() {
   });
 
   // Insertar datos de prueba para el módulo Putaway
-  const putawayData = Array.from({ length: 20 }, (_, i) => ({
+  const putawayData = packingData.map((pkg, i) => ({
     receiptId: `RCPT-${(i + 1).toString().padStart(3, '0')}`,
     location: i % 2 === 0 ? 'LOC-001' : 'LOC-002',
-    quantity: Math.floor(Math.random() * 50) + 1,
+    quantity: pkg.itemsCount,
   }));
   await prisma.putaway.createMany({ data: putawayData, skipDuplicates: true });
 
   // Insertar datos de prueba para el módulo Item
-  const itemsData = Array.from({ length: 100 }, (_, i) => ({
+  const itemsData = Array.from({ length: 10 }, (_, i) => ({
     sku: `SKU-${(i + 1).toString().padStart(3, '0')}`,
     name: `Producto ${i + 1}`,
     description: `Descripción del producto ${i + 1}`,

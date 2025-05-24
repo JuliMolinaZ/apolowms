@@ -5,10 +5,13 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import Badge from "@mui/material/Badge";
 import IconButton from "@mui/material/IconButton";
 import { useAuth } from "@/context/AuthContext";
 import EditProfileModal from "./EditProfileModal";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface DashboardHeaderProps {
   toggleDrawer: () => void;
@@ -42,6 +45,11 @@ const RightSection = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
+`;
+
+const NotificationButton = styled.div`
+  cursor: pointer;
+  color: #fff;
 `;
 
 const UserPill = styled.div`
@@ -86,6 +94,7 @@ export default function DashboardHeader({
 }: DashboardHeaderProps) {
   const { user } = useAuth();
   const [openProfile, setOpenProfile] = useState(false);
+  const notifications = useNotifications();
 
   return (
     <>
@@ -97,6 +106,12 @@ export default function DashboardHeader({
         </LeftSection>
 
         <RightSection>
+          <NotificationButton>
+            <Badge badgeContent={notifications.length} color="error">
+              <NotificationsIcon />
+            </Badge>
+          </NotificationButton>
+
           <UserPill onClick={() => setOpenProfile(true)}>
             <AvatarImage
               src="/logos/default-avatar.png"
