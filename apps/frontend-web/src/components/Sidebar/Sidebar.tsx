@@ -11,6 +11,7 @@ import {
   Collapse,
   Box,
   Button,
+  IconButton,
   useTheme,
   Tooltip,
 } from "@mui/material";
@@ -26,8 +27,8 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const COLLAPSED_WIDTH = 0;    // cuando está cerrado, no ocupa ancho
-const EXPANDED_WIDTH  = 240;
+const COLLAPSED_WIDTH = 0;
+const EXPANDED_WIDTH = 240;
 
 const drawerVariants: Variants = {
   open: {
@@ -48,10 +49,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
   const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t } = useTranslation("common", { keyPrefix: "sidebar" });
   const [openSubs, setOpenSubs] = useState<Record<string, boolean>>({});
 
-  // Si está cerrado, no renderizamos nada
   if (!open) return null;
 
   const toggleSub = (label: string) =>
@@ -76,14 +76,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
           overflowX: "hidden",
           bgcolor: "common.white",
           boxShadow: theme.shadows[4],
-          borderTopRightRadius: 16,
-          borderBottomRightRadius: 16,
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
           display: "flex",
           flexDirection: "column",
         },
       }}
     >
-      {/* HEADER del sidebar: solo logo */}
+      {/* Header con logo */}
       <Box
         sx={{
           height: 64,
@@ -101,7 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
         />
       </Box>
 
-      {/* ITEMS */}
+      {/* Lista de items */}
       <List sx={{ flexGrow: 1, p: 0 }}>
         {sidebarItems.map((item: SidebarItem, i: number) => {
           const active = pathname === item.path;
@@ -127,11 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
                   "&:hover": { bgcolor: theme.palette.action.hover },
                 }}
               >
-                <Tooltip
-                  title={t(`sidebar.${item.label}`)}
-                  placement="right"
-                  disableHoverListener
-                >
+                <Tooltip title={t(item.label)} placement="right">
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
@@ -149,19 +145,33 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
                     />
                   </ListItemIcon>
                 </Tooltip>
+
                 <ListItemText
-                  primary={t(`sidebar.${item.label}`)}
-                  sx={{ color: theme.palette.text.primary, fontWeight: 500 }}
+                  primary={t(item.label)}
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontWeight: 500,
+                  }}
                 />
+
                 {hasSubs && (
-                  <ExpandMoreIcon
-                    onClick={() => toggleSub(item.label)}
-                    sx={{
-                      transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform .3s",
-                      cursor: "pointer",
+                  <IconButton
+                    edge="end"
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSub(item.label);
                     }}
-                  />
+                    sx={{
+                      ml: "auto",
+                      transform: expanded
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                      transition: "transform .3s",
+                    }}
+                  >
+                    <ExpandMoreIcon />
+                  </IconButton>
                 )}
               </ListItemButton>
 
@@ -184,7 +194,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
                             bgcolor: subActive
                               ? theme.palette.action.selected
                               : "transparent",
-                            "&:hover": { bgcolor: theme.palette.action.hover },
+                            "&:hover": {
+                              bgcolor: theme.palette.action.hover,
+                            },
                           }}
                         >
                           <ListItemIcon
@@ -204,7 +216,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
                             />
                           </ListItemIcon>
                           <ListItemText
-                            primary={t(`sidebar.${sub.label}`)}
+                            primary={t(sub.label)}
                             sx={{ color: theme.palette.text.primary }}
                           />
                         </ListItemButton>
@@ -218,8 +230,13 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
         })}
       </List>
 
-      {/* LOGOUT */}
-      <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+      {/* Logout */}
+      <Box
+        sx={{
+          p: 2,
+          borderTop: `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Button
           variant="outlined"
           fullWidth
@@ -233,7 +250,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
             borderRadius: 2,
           }}
         >
-          {t("sidebar.Logout")}
+          {t("Logout")}
         </Button>
       </Box>
     </Drawer>
