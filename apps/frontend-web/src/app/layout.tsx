@@ -1,9 +1,9 @@
 // src/app/layout.tsx
-import LanguageProvider from "@/components/LanguageProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientProviders from "@/components/ClientProviders";
+import LanguageProvider from "@/components/LanguageProvider";
 import ClientSplash from "./ClientSplash";
 import FloatingChatButton from "@/components/ButtonIA/FloatingChatButton";
 
@@ -13,16 +13,10 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "APOLO",
   description: "APOLOWARE",
-  icons: {
-    icon: "../../public/logos/Apoloware.svg",
-  },
+  icons: { icon: "/logos/Apoloware.svg" },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -36,4 +30,3 @@ export default function RootLayout({
     </html>
   );
 }
-

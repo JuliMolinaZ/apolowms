@@ -1,27 +1,35 @@
+// src/app/items/page.tsx  (Landing de Items)
 "use client";
 
-import Link from "next/link";
-import { Box, Grid, CardActionArea, Card, CardContent, Typography } from "@mui/material";
+import React from "react";
+import DashboardMenuPage, { MenuCard } from "@/components/DashboardMenuPage";
 
-export default function ItemsIndexPage() {
+export default function ItemsPage() {
+  // Definimos manualmente las 2 cards: Items y Movilizaciones
+  const cards: MenuCard[] = [
+    {
+      key: "Items",
+      number: 9,
+      route: "/items/items",
+    },
+    {
+      key: "Movilizaciones",
+      number: 3,
+      route: "/items/mobilizations",
+    },
+  ];
+
+  const logosMapping: Record<string, string> = {
+    Items: "cube.svg",
+    Movilizaciones: "cube.svg", // Ajusta el icono si lo deseas
+  };
+
   return (
-    <Box p={2}>
-      <Typography variant="h4" gutterBottom>
-        Items
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Link href="/items/mobilizations" passHref>
-            <CardActionArea component="a">
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6">Movilizaciones</Typography>
-                </CardContent>
-              </Card>
-            </CardActionArea>
-          </Link>
-        </Grid>
-      </Grid>
-    </Box>
+    <DashboardMenuPage
+      title="Items"
+      cards={cards}
+      logosMapping={logosMapping}
+      showWelcome={false} // Oculta el saludo
+    />
   );
 }

@@ -1,14 +1,10 @@
+import type { User } from "@/lib/types/user";
+
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
-interface User {
-  id: number;
-  name: string;
-  isOnline: boolean;
-  avatar: string;
-}
 
 type CallType = "audio" | "video";
 type CallState = "calling" | "in-progress" | "ended";

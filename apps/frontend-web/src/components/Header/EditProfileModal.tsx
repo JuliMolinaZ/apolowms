@@ -1,19 +1,11 @@
+// src/components/Header/EditProfileModal.tsx
 'use client';
 
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import EditIcon from '@mui/icons-material/Edit';
-import { API_URL } from '../../lib/config';
-
-/* Ajusta la interfaz 'User' a tu modelo real */
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  phone?: string;
-  role: string;
-  profileImage?: string; // nombre del archivo de la imagen
-}
+import { API_URL } from '@/lib/config';
+import type { User } from '@/lib/types/user';
 
 interface EditProfileModalProps {
   user: User;
@@ -50,7 +42,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       });
       const data = await res.json();
       if (res.ok) {
-        // Actualiza localStorage si el backend devuelve el user
         localStorage.setItem('user', JSON.stringify(data));
         onClose();
         window.location.reload();
@@ -63,7 +54,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       setProfileImage(e.target.files[0]);
     }
   };
@@ -97,48 +88,49 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           </AvatarContainer>
         </HeaderSection>
 
-        {/* Puedes mostrar el nombre debajo de la imagen, si quieres que se parezca más al frame */}
-        {/* <NameText>{username}</NameText> */}
-
         <Form onSubmit={handleSubmit}>
           <InputGroup>
             <label>Nombre</label>
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={e => setUsername(e.target.value)}
             />
           </InputGroup>
+
           <InputGroup>
             <label>Email</label>
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
             />
           </InputGroup>
+
           <InputGroup>
             <label>Teléfono</label>
             <input
               type="text"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={e => setPhone(e.target.value)}
             />
           </InputGroup>
+
           <InputGroup>
             <label>Rol</label>
             <input
               type="text"
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={e => setRole(e.target.value)}
             />
           </InputGroup>
+
           <InputGroup>
             <label>Nueva contraseña</label>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
             />
           </InputGroup>
 
@@ -156,29 +148,26 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
 export default EditProfileModal;
 
-// ======================= Styled Components =======================
+/* ====================== Styled Components ====================== */
 
 const ModalOverlay = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1200;
+  z-index: 1200; /* superior al header (1100) */
 `;
 
 const ModalContainer = styled.div`
-  background: #fff; /* Fondo blanco para simular tarjeta */
+  background: #fff;
   padding: 2rem;
   border-radius: 1rem;
   width: 400px;
   max-width: 90%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  color: #000; /* Texto en negro */
+  color: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -218,19 +207,10 @@ const HiddenFileInput = styled.input`
   display: none;
 `;
 
-/* Si deseas mostrar el nombre debajo de la imagen, usa algo así:
-const NameText = styled.h2`
-  margin-top: 0.8rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-`;
-*/
-
 const Form = styled.form`
   width: 100%;
   display: flex;
   flex-direction: column;
-  margin-top: 1rem;
 `;
 
 const InputGroup = styled.div`

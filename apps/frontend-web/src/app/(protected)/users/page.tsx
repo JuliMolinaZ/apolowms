@@ -1,584 +1,509 @@
+// src/app/(protected)/users/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { API_URL } from "../../lib/config";
+import React, { useEffect, useState, ChangeEvent } from "react";
+import styled, { keyframes } from "styled-components";
+import { API_URL } from "../../../lib/config";
 
 interface User {
   id: string;
-  name?: string;
+  name: string;
   username: string;
   email: string;
   phone?: string;
   role: string;
-  image?: string; // Propiedad para la imagen
+  image?: string;
 }
 
+const pageSizes = { cards: 9, table: 10 };
 
-const UsersPage: React.FC = () => {
+export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    (async () => {
       try {
         const res = await fetch(`${API_URL}/users`);
         const data = await res.json();
         if (Array.isArray(data)) {
-          const mapped = data.map((u: any) => ({
-            id: String(u.id),
-            name: u.name || u.username,
-            username: u.username,
-            email: u.email,
-            phone: u.phone,
-            role: u.role,
-            image: u.profileImage ? `${API_URL}/uploads/${u.profileImage}` : undefined,
-          }));
-          setUsers(mapped);
-        } else {
-          console.error('La respuesta de usuarios no es un array:', data);
+          setUsers(
+            data.map((u: any) => ({
+              id: String(u.id),
+              name: u.name || u.username,
+              username: u.username,
+              email: u.email,
+              phone: u.phone,
+              role: u.role,
+              image: u.profileImage
+                ? `${API_URL}/uploads/${u.profileImage}`
+                : undefined,
+            }))
+          );
         }
-      } catch (error) {
-        console.error('Error al obtener usuarios:', error);
+      } catch (err) {
+        console.error(err);
       }
-    };
-    fetchUsers();
+    })();
   }, []);
 
-  const totalUsers = users.length;
+  // Filtrado combinado
+  const filtered = users.filter((u) => {
+    const matchText =
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchRole = roleFilter === "all" || u.role === roleFilter;
+    return matchText && matchRole;
+  });
 
-  const handleEdit = (user: User) => {
-    setEditingUser(user);
-  };
+  // Paginación
+  const pageSize = pageSizes[viewMode];
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paged = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
-  const handleDelete = async (user: User) => {
-    if (!confirm('¿Eliminar usuario?')) return;
-    try {
-      const res = await fetch(`${API_URL}/users/${user.id}`, { method: 'DELETE' });
-      if (!res.ok) {
-        console.error('Error al eliminar usuario:', await res.text());
-        return;
-      }
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-    } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-    }
-  };
-
-  const handleCloseEdit = () => {
-    setEditingUser(null);
-  };
+  const roles = Array.from(new Set(users.map((u) => u.role)));
 
   return (
-    <PageContainer>
-      {/* Encabezado: Logo (círculo) + "Users {n}" */}
-      <HeaderWrapper>
-        <LogoCircle>
-          <img src="/logos/user.svg" alt="Users Logo" />
-        </LogoCircle>
-        <HeaderText>
-          Users <span>{totalUsers}</span>
-        </HeaderText>
-      </HeaderWrapper>
+    <Container>
+      {/* Header */}
+      <Header>
+        <HeaderLogo>
+          <img src="/logos/user.svg" alt="Users" />
+        </HeaderLogo>
+        <HeaderTitle>
+          Users <span>{users.length}</span>
+        </HeaderTitle>
+      </Header>
 
-      {/* Burbujas decorativas (opcionales) */}
-      <BubblesContainer>
-        <Bubble size={150} top="10%" right="5%" />
-        <Bubble size={100} top="35%" right="10%" />
-        <Bubble size={200} top="60%" right="2%" />
-        <Bubble size={60} top="80%" right="8%" />
-      </BubblesContainer>
-
-      {/* Ícono con badge en esquina inferior derecha (opcional) */}
-      <BoxIconContainer>
-        <BoxPlaceholder>Box</BoxPlaceholder>
-        <NotificationBadge>2</NotificationBadge>
-      </BoxIconContainer>
-
-      {/* Vista de edición o tarjetas de usuarios */}
-      {editingUser ? (
-        <EditUserView user={editingUser} onClose={handleCloseEdit} />
-      ) : (
-        <CardsContainer>
-          {users.map((user) => (
-            <UserCard key={user.id}>
-              {/* Sección izquierda: Avatar + info (Nombre, @username, email) */}
-              <LeftSection>
-                <AvatarCircle>
-                  <img
-                    src={user.image || "/logos/default-avatar.png"}
-                    alt={user.username}
-                  />
-                </AvatarCircle>
-                <UserText>
-                  <UserName>{user.name}</UserName>
-                  <UserUsername>@{user.username}</UserUsername>
-                  <UserEmail>{user.email}</UserEmail>
-                </UserText>
-              </LeftSection>
-
-              {/* Sección derecha: Rol, Teléfono y botones */}
-              <RightSection>
-                <RolePhone>
-                  <UserRole>{user.role}</UserRole>
-                  {user.phone && <UserPhone>{user.phone}</UserPhone>}
-                </RolePhone>
-                <ButtonsContainer>
-                  <EditButton onClick={() => handleEdit(user)}>
-                    Editar
-                  </EditButton>
-                  <DeleteButton onClick={() => handleDelete(user)}>
-                    Eliminar
-                  </DeleteButton>
-                </ButtonsContainer>
-              </RightSection>
-            </UserCard>
+      {/* Controls */}
+      <Controls>
+        <SearchInput
+          placeholder="Search by name, username or email..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+        />
+        <Select
+          value={roleFilter}
+          onChange={(e) => {
+            setRoleFilter(e.target.value);
+            setCurrentPage(1);
+          }}
+        >
+          <option value="all">All Roles</option>
+          {roles.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
           ))}
-        </CardsContainer>
+        </Select>
+        <ViewToggle>
+          <ToggleButton
+            active={viewMode === "cards"}
+            onClick={() => setViewMode("cards")}
+          >
+            Cards
+          </ToggleButton>
+          <ToggleButton
+            active={viewMode === "table"}
+            onClick={() => setViewMode("table")}
+          >
+            Table
+          </ToggleButton>
+        </ViewToggle>
+      </Controls>
+
+      {/* Main Content */}
+      {viewMode === "cards" ? (
+        <CardsGrid>
+          {paged.map((user) => (
+            <Card key={user.id}>
+              <Avatar>
+                <img
+                  src={user.image || "/logos/default-avatar.png"}
+                  alt={user.username}
+                />
+              </Avatar>
+              <Info>
+                <Name>{user.name}</Name>
+                <Username>@{user.username}</Username>
+                <Email>{user.email}</Email>
+                <Role>{user.role}</Role>
+              </Info>
+              <Actions>
+                <Edit onClick={() => setEditingUser(user)}>Edit</Edit>
+                <Delete
+                  onClick={async () => {
+                    if (!confirm("Delete this user?")) return;
+                    await fetch(`${API_URL}/users/${user.id}`, {
+                      method: "DELETE",
+                    });
+                    setUsers((prev) =>
+                      prev.filter((u) => u.id !== user.id)
+                    );
+                  }}
+                >
+                  Delete
+                </Delete>
+              </Actions>
+            </Card>
+          ))}
+        </CardsGrid>
+      ) : (
+        <TableWrapper>
+          <Table>
+            <thead>
+              <tr>
+                <th>Avatar</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paged.map((u) => (
+                <tr key={u.id}>
+                  <td>
+                    <SmallAvatar
+                      src={u.image || "/logos/default-avatar.png"}
+                    />
+                  </td>
+                  <td>{u.name}</td>
+                  <td>@{u.username}</td>
+                  <td>{u.email}</td>
+                  <td>{u.phone || "-"}</td>
+                  <td>{u.role}</td>
+                  <td>
+                    <SmallAction onClick={() => setEditingUser(u)}>
+                      Edit
+                    </SmallAction>
+                    <SmallAction
+                      danger
+                      onClick={async () => {
+                        if (!confirm("Delete this user?")) return;
+                        await fetch(`${API_URL}/users/${u.id}`, {
+                          method: "DELETE",
+                        });
+                        setUsers((p) => p.filter((x) => x.id !== u.id));
+                      }}
+                    >
+                      Delete
+                    </SmallAction>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableWrapper>
       )}
-    </PageContainer>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <Pagination>
+          <PageBtn
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            ←
+          </PageBtn>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <PageBtn
+              key={p}
+              active={p === currentPage}
+              onClick={() => setCurrentPage(p)}
+            >
+              {p}
+            </PageBtn>
+          ))}
+          <PageBtn
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
+            →
+          </PageBtn>
+        </Pagination>
+      )}
+
+      {/* Modal de edición */}
+      {editingUser && (
+        <ModalOverlay onClick={() => setEditingUser(null)}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <h2>Edit User</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await fetch(`${API_URL}/users/${editingUser.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(editingUser),
+                });
+                setUsers((prev) =>
+                  prev.map((u) =>
+                    u.id === editingUser.id ? editingUser : u
+                  )
+                );
+                setEditingUser(null);
+              }}
+            >
+              <Label>Name</Label>
+              <Input
+                value={editingUser.name}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, name: e.target.value })
+                }
+              />
+              <Label>Username</Label>
+              <Input
+                value={editingUser.username}
+                onChange={(e) =>
+                  setEditingUser({
+                    ...editingUser,
+                    username: e.target.value,
+                  })
+                }
+              />
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={editingUser.email}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, email: e.target.value })
+                }
+              />
+              <Label>Phone</Label>
+              <Input
+                value={editingUser.phone || ""}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, phone: e.target.value })
+                }
+              />
+              <Label>Role</Label>
+              <Input
+                value={editingUser.role}
+                onChange={(e) =>
+                  setEditingUser({ ...editingUser, role: e.target.value })
+                }
+              />
+              <ButtonRow>
+                <SaveButton type="submit">Save</SaveButton>
+                <CancelButton onClick={() => setEditingUser(null)}>
+                  Cancel
+                </CancelButton>
+              </ButtonRow>
+            </form>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </Container>
   );
-};
-
-export default UsersPage;
-
-/* ========================= Vista de Edición ========================= */
-interface EditUserViewProps {
-  user: User;
-  onClose: () => void;
 }
 
-const EditUserView: React.FC<EditUserViewProps> = ({ user, onClose }) => {
-  const [name, setName] = useState(user.name);
-  const [username, setUsername] = useState(user.username);
-  const [phone, setPhone] = useState(user.phone || "");
-  const [role, setRole] = useState(user.role);
-
-  const handleSave = async () => {
-    try {
-      const res = await fetch(`${API_URL}/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, phone, role }),
-      });
-      if (!res.ok) {
-        console.error('Error al actualizar usuario:', await res.text());
-      }
-    } catch (error) {
-      console.error('Error al actualizar usuario:', error);
-    }
-    onClose();
-  };
-
-  return (
-    <EditContainer>
-      {/* Formulario (columna izquierda) */}
-      <EditForm>
-        <FormTitle>Editar perfil</FormTitle>
-        <UserHandle>@{username}</UserHandle>
-
-        <FieldLabel>Name</FieldLabel>
-        <FieldInput
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <FieldLabel>Username</FieldLabel>
-        <FieldInput
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-
-        <FieldLabel>Teléfono</FieldLabel>
-        <FieldInput
-          type="text"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-
-        <FieldLabel>Rol</FieldLabel>
-        <FieldInput
-          type="text"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        />
-
-        <SaveButton onClick={handleSave}>Guardar</SaveButton>
-      </EditForm>
-
-      {/* Tarjeta de vista previa (columna derecha) */}
-      <PreviewCard>
-        <PreviewImage>
-          <img
-            src={user.image || "/logos/default-avatar.png"}
-            alt={user.username}
-          />
-        </PreviewImage>
-
-        <PreviewData>
-          <PreviewLabel>Name</PreviewLabel>
-          <PreviewValue>{name}</PreviewValue>
-
-          <PreviewLabel>Username</PreviewLabel>
-          <PreviewValue>{username}</PreviewValue>
-
-          <PreviewLabel>Teléfono</PreviewLabel>
-          <PreviewValue>{phone}</PreviewValue>
-
-          <PreviewLabel>Rol</PreviewLabel>
-          <PreviewValue>{role}</PreviewValue>
-        </PreviewData>
-      </PreviewCard>
-    </EditContainer>
-  );
-};
-
-/* ======================== Estilos Generales ======================== */
-const PageContainer = styled.div`
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #fff;
-  z-index: 1;
+/* ===========================
+   Styled Components
+   =========================== */
+const fadeIn = keyframes`
+  from { opacity: 0 }
+  to   { opacity: 1 }
 `;
-
-const HeaderWrapper = styled.div`
+const Container = styled.div`
+  padding: 2rem;
+  background: #f4f7fa;
+  min-height: 100vh;
+  animation: ${fadeIn} 0.5s;
+`;
+const Header = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin: 2rem;
 `;
-
-/* Nuevo componente para el logo en el encabezado */
-const LogoCircle = styled.div`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  overflow: hidden;
+const HeaderLogo = styled.div`
+  width: 48px;
+  height: 48px;
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
   }
 `;
-
-const HeaderText = styled.h2`
+const HeaderTitle = styled.h1`
   font-size: 2rem;
-  font-weight: 700;
   color: #333;
-  margin: 0;
-
   span {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #666;
+    color: #4bbf73;
+    font-weight: bold;
     margin-left: 0.5rem;
   }
 `;
-
-/* Burbujas decorativas */
-const BubblesContainer = styled.div`
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 50%;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: -1;
+const Controls = styled.div`
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
 `;
-
-interface BubbleProps {
-  size: number;
-  top: string;
-  right: string;
-}
-
-const Bubble = styled.div<BubbleProps>`
-  position: absolute;
-  width: ${(props) => props.size}px;
-  height: ${(props) => props.size}px;
-  border-radius: 50%;
-  background: #b2daf0;
-  opacity: 0.8;
-  top: ${(props) => props.top};
-  right: ${(props) => props.right};
-`;
-
-/* Ícono con badge en esquina inferior derecha */
-const BoxIconContainer = styled.div`
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  z-index: 100;
-`;
-
-const BoxPlaceholder = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: #cccccc;
+const SearchInput = styled.input`
+  flex: 1 1 200px;
+  padding: 0.6rem 1rem;
   border-radius: 0.5rem;
-  color: #333;
-  font-size: 0.9rem;
-  font-weight: 700;
+  border: 1px solid #ccc;
+`;
+const Select = styled.select`
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+`;
+const ViewToggle = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  overflow: hidden;
+`;
+const ToggleButton = styled.button<{ active: boolean }>`
+  padding: 0.6rem 1.2rem;
+  background: ${({ active }) => (active ? "#4bbf73" : "transparent")};
+  color: ${({ active }) => (active ? "#fff" : "#333")};
+  border: none;
+  cursor: pointer;
 `;
 
-const NotificationBadge = styled.div`
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  background-color: #f00;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
+  gap: 1.2rem;
 `;
-
-/* ===================== Tarjetas de Usuarios ===================== */
-const CardsContainer = styled.div`
-  width: 90%;
-  max-width: 1200px;
-  margin: 2rem auto;
+const Card = styled.div`
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  animation: ${fadeIn} 0.3s;
 `;
-
-const UserCard = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem 2rem;
-  gap: 1rem;
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-`;
-
-const AvatarCircle = styled.div`
-  width: 50px;
-  height: 50px;
+const Avatar = styled.div`
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  margin: 0 auto 1rem;
   img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; height: 100%; object-fit: cover;
   }
 `;
-
-const UserText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-`;
-
-const UserName = styled.div`
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #333;
-`;
-
-const UserUsername = styled.div`
-  font-size: 0.9rem;
-  color: #555;
-`;
-
-const UserEmail = styled.div`
-  font-size: 0.9rem;
-  color: #555;
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-`;
-
-const RolePhone = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-`;
-
-const UserRole = styled.div`
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
-  text-transform: uppercase;
-`;
-
-const UserPhone = styled.div`
-  font-size: 0.9rem;
-  color: #333;
-`;
-
-const ButtonsContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const EditButton = styled.button`
-  background-color: #2e67f8;
-  color: #fff;
-  border: none;
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-
-  &:hover {
-    background-color: #1f4cbc;
-  }
-`;
-
-const DeleteButton = styled.button`
-  background-color: #e85b5b;
-  color: #fff;
-  border: none;
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 600;
-
-  &:hover {
-    background-color: #d14242;
-  }
-`;
-
-/* ===================== Vista de Edición ===================== */
-const EditContainer = styled.div`
-  width: 90%;
-  max-width: 1200px;
-  margin: 4rem auto 3rem auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 3rem;
-`;
-
-const EditForm = styled.div`
+const Info = styled.div`
+  text-align: center;
   flex: 1;
-  max-width: 450px;
-  display: flex;
-  flex-direction: column;
+`;
+const Name = styled.h3`margin:0; font-size:1.2rem; color:#333;`;
+const Username = styled.p`margin:0.2rem 0; color:#777;`;
+const Email = styled.p`margin:0.2rem 0; color:#777; font-size:0.9rem;`;
+const Role = styled.span`
+  display:inline-block;
+  margin-top:0.6rem;
+  padding:0.2rem 0.6rem;
+  background:#e0f7e9;
+  color:#2e7d32;
+  border-radius:0.4rem;
+  font-size:0.8rem;
+  text-transform:uppercase;
+`;
+const Actions = styled.div`
+  display:flex;
+  justify-content: space-around;
+  margin-top:1rem;
+`;
+const Btn = styled.button`
+  padding:0.5rem 1.2rem;
+  border:none; border-radius:0.6rem;
+  font-size:0.9rem; cursor:pointer;
+`;
+const Edit = styled(Btn)`background:#1976d2;color:#fff;`;
+const Delete = styled(Btn)`background:#e53935;color:#fff;`;
+
+const TableWrapper = styled.div`
+  overflow-x:auto; animation:${fadeIn} 0.3s;
+`;
+const Table = styled.table`
+  width:100%;
+  border-collapse:collapse;
+  th,td { padding:0.8rem 1rem; text-align:left; border-bottom:1px solid #eee; }
+  th { background:#fafafa; }
+`;
+const SmallAvatar = styled.img`
+  width:32px;
+  height:32px;
+  border-radius:50%;
 `;
 
-const FormTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 0.2rem;
+const SmallAction = styled.button<{ danger?: boolean }>`
+  background: ${({ danger }) => (danger ? "#e53935" : "#1976d2")};
+  color:#fff;
+  border:none; border-radius:0.4rem;
+  padding:0.3rem 0.6rem;
+  font-size:0.8rem; cursor:pointer;
+  margin-right:0.4rem;
 `;
 
-const UserHandle = styled.span`
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 2rem;
-  display: inline-block;
+const Pagination = styled.div`
+  margin:2rem 0;
+  display:flex;
+  justify-content:center;
+  gap:0.5rem;
+`;
+const PageBtn = styled.button<{ active?: boolean }>`
+  padding:0.5rem 0.8rem;
+  background: ${({ active }) => (active ? "#4bbf73" : "transparent")};
+  color: ${({ active }) => (active ? "#fff" : "#333")};
+  border:1px solid #ccc;
+  border-radius:0.4rem;
+  cursor:pointer;
+  &:disabled { opacity:0.4; cursor:not-allowed; }
 `;
 
-const FieldLabel = styled.label`
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 0.3rem;
+/* Modal */
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index: 1000;
 `;
-
-const FieldInput = styled.input`
-  border: none;
-  border-bottom: 1px solid #ccc;
-  padding: 0.4rem 0;
-  margin-bottom: 1.2rem;
-  font-size: 1rem;
-  color: #333;
-
-  &:focus {
-    outline: none;
-    border-bottom: 2px solid #333;
-  }
-`;
-
-const SaveButton = styled.button`
-  width: fit-content;
-  background-color: #2e67f8;
-  color: #fff;
-  border: none;
+const ModalContent = styled.div`
+  background: #fff;
   border-radius: 1rem;
-  padding: 0.6rem 1.5rem;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-
-  &:hover {
-    background-color: #1f4cbc;
-  }
-`;
-
-const PreviewCard = styled.div`
-  flex: 1;
-  max-width: 450px;
-  background-color: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 2rem;
-  align-self: flex-start;
+  width: 90%;
+  max-width: 500px;
+  animation: ${fadeIn} 0.2s;
 `;
-
-/* Actualizamos PreviewImage para mostrar la foto del usuario */
-const PreviewImage = styled.div`
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 1rem auto;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+const Label = styled.label`
+  display:block;
+  margin:1rem 0 0.3rem;
+  font-size:.9rem; color:#333;
 `;
-
-const PreviewData = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+const Input = styled.input`
+  width: 100%;
+  padding:0.6rem;
+  border:1px solid #ccc;
+  border-radius:0.4rem;
 `;
-
-const PreviewLabel = styled.div`
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #333;
+const ButtonRow = styled.div`
+  margin-top:1.5rem;
+  text-align:right;
 `;
+const SaveButton = styled(Btn)`background:#4bbf73;color:#fff;margin-right:1rem;`;
+const CancelButton = styled(Btn)`background:#ccc;color:#333;`;
 
-const PreviewValue = styled.div`
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-`;

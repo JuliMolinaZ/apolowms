@@ -9,6 +9,19 @@ import IconButton from "@mui/material/IconButton";
 import { useAuth } from "@/context/AuthContext";
 import EditProfileModal from "./EditProfileModal";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import type { User } from "@/lib/types/user";
+
+// 👇 Un “usuario por defecto” que cumple TODOS los campos de la interfaz User
+const defaultUser: User = {
+  id: 0,
+  username: "Juli",
+  email: "",
+  role: "",
+  isOnline: false,
+  name: "Juli",                           // pon aquí un nombre “genérico”
+  avatar: "/logos/default-avatar.png",    // coincide con tu imagen por defecto
+  // profileImage?: string  // opcional, lo dejamos fuera
+};
 
 interface DashboardHeaderProps {
   toggleDrawer: () => void;
@@ -23,7 +36,7 @@ const HeaderContainer = styled.header<{ $sidebarWidth: number }>`
   top: 0;
   left: ${({ $sidebarWidth }) => $sidebarWidth}px;
   width: calc(100% - ${({ $sidebarWidth }) => $sidebarWidth}px);
-  height: 60px;
+  height: 64px;
   background: linear-gradient(45deg, #8391ff, #a5c1ff);
   display: flex;
   align-items: center;
@@ -99,10 +112,10 @@ export default function DashboardHeader({
         <RightSection>
           <UserPill onClick={() => setOpenProfile(true)}>
             <AvatarImage
-              src="/logos/default-avatar.png"
-              alt={user?.username || "Juli"}
+              src={(user ?? defaultUser).avatar}
+              alt={(user ?? defaultUser).username}
             />
-            <UserName>{user?.username || "Juli"}</UserName>
+            <UserName>{(user ?? defaultUser).username}</UserName>
             <ThemeCircle
               onClick={(e) => {
                 e.stopPropagation();
@@ -111,21 +124,14 @@ export default function DashboardHeader({
             />
           </UserPill>
 
-          {/* Aquí va el selector de idioma */}
+          {/* Selector de idioma */}
           <LanguageSwitcher />
         </RightSection>
       </HeaderContainer>
 
       {openProfile && (
         <EditProfileModal
-          user={
-            user || {
-              id: "",
-              username: "Juli",
-              email: "",
-              role: "",
-            }
-          }
+          user={user ?? defaultUser}
           onClose={() => setOpenProfile(false)}
         />
       )}

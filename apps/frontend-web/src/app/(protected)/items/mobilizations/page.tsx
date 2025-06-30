@@ -1,508 +1,565 @@
-"use client";
+// src/app/mobilizations/page.tsx
+'use client';
 
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import Image from "next/image";
-import CappasityViewer from "../../../components/Items/CappasityViewer";
-import { API_URL } from "../../../lib/config";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  ChangeEvent,
+  FormEvent,
+} from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from 'recharts';
+import {
+  FaTruckLoading,
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSave,
+  FaTimes,
+} from 'react-icons/fa';
 
-const resolveImage = (img?: string) => {
-  if (!img) return "/logos/cube.svg";
-  if (img.startsWith("http") || img.startsWith("/")) return img;
-  return `${API_URL}/uploads/${img}`;
+// ===== Theme Tokens =====
+const theme = {
+  colors: {
+    background: '#EAF5FA',
+    surface: '#FFFFFF',
+    border: '#d3e0e9',
+    textPrimary: '#333333',
+    textSecondary: '#666666',
+    accent: '#5ce1e6',
+    accentHover: '#54c6d6',
+    pending: '#FFA726',
+    inProgress: '#29B6F6',
+    completed: '#66BB6A',
+    danger: '#e53935',
+  },
+  spacing: (n: number) => `${n * 8}px`,
+  radii: { sm: '6px', md: '8px', lg: '12px' },
+  font: {
+    family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+    sizes: { small: '0.9rem', base: '1rem', title: '1.5rem' },
+  },
 };
 
-/** Modelo de datos */
-interface LocationInfo {
-  location: string;
-  quantity: number;
-  lastUpdate: string;
-  status: "OK" | "LOW" | "OUT";
+// ===== Global Styles =====
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    padding: 0;
+    background: ${theme.colors.background};
+    font-family: ${theme.font.family};
+    color: ${theme.colors.textPrimary};
+  }
+`;
+
+// ===== Data Model =====
+interface Mobilization {
+  id: string;
+  item: string;
+  from: string;
+  to: string;
+  qty: number;
+  status: 'Pending' | 'In Progress' | 'Completed';
+  date: string; // YYYY-MM-DD
+  responsible: string;
+  priority: 'High' | 'Medium' | 'Low';
+  notes: string;
 }
 
-interface Item {
-  id: number;
-  name: string;
-  brand?: string;
-  price?: string | number;
-  stock: number;
-  sku: string;
-  description?: string;
-  image?: string;
-  viewerUrl?: string;
-  barcode?: string;
-  otherStock?: LocationInfo[];
-}
+// ===== Demo lookup tables =====
+const PRODUCTS = [
+  'Shirts', 'Shoes', 'Caps', 'Pants', 'Socks',
+  'Jackets', 'Belts', 'Gloves', 'Hats', 'Bags',
+];
+const LOCATIONS = [
+  'Central Warehouse',
+  'North Warehouse',
+  'South Warehouse',
+  'East Depot',
+  'West Depot',
+];
+const USERS = ['Juli', 'Ana', 'Luis', 'Mia', 'Eva', 'Omar', 'Raj', 'Zoe'];
 
-
-
-export default function ItemsPage() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-
-  // Obtiene los ítems del backend
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await fetch(`${API_URL}/items`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setItems(data);
-        }
-      } catch (error) {
-        console.error('Error al obtener items:', error);
-      }
-    };
-    fetchItems();
-  }, []);
-
-
-  return (
-    <PageContainer>
-      <HeaderWrapper>
-        <GreenCircle>
-          <IconImage src="/logos/cube.svg" alt="Cube Icon" />
-        </GreenCircle>
-        <HeaderText>
-          Items <span>{items.length}</span>
-        </HeaderText>
-      </HeaderWrapper>
-
-      {selectedItem ? (
-        <DetailView item={selectedItem} onClose={() => setSelectedItem(null)} />
-      ) : (
-        <ItemsGrid>
-          {items.map((item) => (
-            <ItemCard key={item.id} onClick={() => setSelectedItem(item)}>
-              <ImageWrapper>
-                <StyledImage
-                  src={resolveImage(item.image)}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 240px"
-                />
-              </ImageWrapper>
-              <ItemName>{item.name}</ItemName>
-              {item.brand && <ItemBrand>{item.brand}</ItemBrand>}
-              {item.price && <ItemPrice>{item.price}</ItemPrice>}
-            </ItemCard>
-          ))}
-        </ItemsGrid>
-      )}
-    </PageContainer>
-  );
-}
-
-/** Vista de Detalle */
-interface DetailViewProps {
-  item: Item;
-  onClose: () => void;
-}
-
-const DetailView: React.FC<DetailViewProps> = ({ item, onClose }) => {
-  return (
-    <DetailContainer>
-      <DetailCard>
-        <TopImageContainer>
-          {item.viewerUrl ? (
-            <CappasityViewer src={item.viewerUrl} />
-          ) : (
-            <DetailImage src={resolveImage(item.image)} alt={item.name} />
-          )}
-        </TopImageContainer>
-
-        <Row>
-          {item.price && <Price>{item.price}</Price>}
-          <ProductTitle>{item.name}</ProductTitle>
-          <StockInfo>Stock <BlueNumber>{item.stock}</BlueNumber></StockInfo>
-        </Row>
-
-        <SecondaryText>{item.description}</SecondaryText>
-
-        <InfoRow>
-          <InfoColumn>
-            <InfoLabel>SKU</InfoLabel>
-            <InfoValue>{item.sku}</InfoValue>
-          </InfoColumn>
-          <InfoColumn>
-            <InfoLabel>Marca</InfoLabel>
-            <InfoValue>{item.brand}</InfoValue>
-          </InfoColumn>
-        </InfoRow>
-
-        <BottomRow>
-          {item.barcode && (
-            <BarcodeSection>
-              <BarcodeImage
-                src={`https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(
-                  item.barcode
-                )}&code=Code128&translate-esc=off`}
-                alt="Barcode"
-              />
-              <BarcodeValue>
-                <BlueNumber>{item.barcode}</BlueNumber>
-              </BarcodeValue>
-            </BarcodeSection>
-          )}
-
-          <LocationsSection>
-            <LocationsTitle>Ubicaciones actuales</LocationsTitle>
-            <LocationsTable>
-              <thead>
-                <tr>
-                  <th>Almacén</th>
-                  <th>Cantidad</th>
-                  <th>Última Actualización</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {item.otherStock?.map((loc, index) => (
-                  <tr key={index}>
-                    <td>{loc.location}</td>
-                    <td><BlueNumber>{loc.quantity}</BlueNumber></td>
-                    <td>{loc.lastUpdate}</td>
-                    <td>
-                      <StatusBadge status={loc.status}>
-                        {loc.status}
-                      </StatusBadge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </LocationsTable>
-          </LocationsSection>
-        </BottomRow>
-
-        <CloseButton onClick={onClose}>Volver</CloseButton>
-      </DetailCard>
-    </DetailContainer>
-  );
+// ===== Generate more demo records =====
+const generateDemo = (): Mobilization[] => {
+  const statuses: Mobilization['status'][] = [
+    'Pending', 'In Progress', 'Completed',
+  ];
+  const priorities: Mobilization['priority'][] = [
+    'High', 'Medium', 'Low',
+  ];
+  const data: Mobilization[] = [];
+  for (let i = 1; i <= 30; i++) {
+    const id = `MOB-${String(i).padStart(3, '0')}`;
+    const item = PRODUCTS[i % PRODUCTS.length];
+    const from = LOCATIONS[i % LOCATIONS.length];
+    const to = LOCATIONS[(i + 2) % LOCATIONS.length];
+    const qty = Math.floor(Math.random() * 200) + 10;
+    const status = statuses[i % statuses.length];
+    const priority = priorities[i % priorities.length];
+    const date = `2025-06-${String((i % 28) + 1).padStart(2, '0')}`;
+    const responsible = USERS[i % USERS.length];
+    const notes = `Auto-generated note ${i}`;
+    data.push({ id, item, from, to, qty, status, date, responsible, priority, notes });
+  }
+  return data;
 };
+const initialData: Mobilization[] = generateDemo();
 
-///////////////////////////////////////////////////////////////////////////////
-// Estilos con styled-components
-///////////////////////////////////////////////////////////////////////////////
-
-const PageContainer = styled.div`
-  width: 100%;
-  min-height: 100vh;
-  background: #f7f7f7;
-  padding: 2rem;
-  box-sizing: border-box;
+// ===== Styled Components =====
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${theme.spacing(2)};
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing(2)};
 `;
 
-/** Encabezado */
-const HeaderWrapper = styled.div`
+const Header = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: ${theme.spacing(1)};
 `;
 
-const GreenCircle = styled.div`
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #a1f3c3, #4bbf73);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const IconImage = styled.img`
-  width: 28px;
-  height: 28px;
-`;
-
-const HeaderText = styled.h2`
-  font-size: 2rem;
-  font-weight: 700;
+const Title = styled.h1`
+  font-size: ${theme.font.sizes.title};
   margin: 0;
-  color: #333;
-  span {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1976d2; /* Números en azul */
-    margin-left: 0.5rem;
-  }
 `;
 
-////////////////////////////////////////////////////////////////////////////////
-// Grid de Items
-////////////////////////////////////////////////////////////////////////////////
-
-const ItemsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
-`;
-
-const ItemCard = styled.div`
-  background: #fff;
-  border-radius: 1rem;
-  padding: 1rem;
-  text-align: center;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const ImageWrapper = styled.div`
-  position: relative;
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-  border-radius: 0.5rem;
-  background: #f8f8f8;
-`;
-
-const StyledImage = styled(Image)`
-  object-fit: contain;
-`;
-
-const ItemName = styled.h3`
-  margin: 0.5rem 0 0.2rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #333;
-`;
-
-const ItemBrand = styled.div`
-  font-size: 0.95rem;
-  color: #666;
-`;
-
-const ItemPrice = styled.div`
-  font-size: 1.1rem;
-  color: #e53935;
-  margin-top: 0.3rem;
-  font-weight: 600;
-`;
-
-////////////////////////////////////////////////////////////////////////////////
-// Vista de Detalle
-////////////////////////////////////////////////////////////////////////////////
-
-const DetailContainer = styled.div`
+const FilterBar = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  gap: ${theme.spacing(1)};
+  flex-wrap: wrap;
 `;
 
-const DetailCard = styled.div`
-  position: relative;
-  background: #fff;
-  width: 100%;
-  max-width: 900px;
-  border-radius: 1rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const TopImageContainer = styled.div`
-  width: 100%;
-  height: 350px;
-  background: #fafafa;
-  border-radius: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-`;
-
-const DetailImage = styled.img`
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-`;
-
-const Row = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Price = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
-`;
-
-const ProductTitle = styled.div`
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #333;
-`;
-
-const StockInfo = styled.div`
-  font-size: 1rem;
-  font-weight: 500;
-  color: #1976d2; /* Números en azul */
-`;
-
-const SecondaryText = styled.div`
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.4;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  gap: 1rem;
-  @media (max-width: 600px) {
-    flex-direction: column;
-  }
-`;
-
-const InfoColumn = styled.div`
-  flex: 1;
-`;
-
-const InfoLabel = styled.div`
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 0.2rem;
-`;
-
-const InfoValue = styled.div`
-  color: #555;
-`;
-
-////////////////////////////////////////////////////////////////////////////////
-// Sección inferior: Barcode + Ubicaciones (tabla)
-////////////////////////////////////////////////////////////////////////////////
-
-const BottomRow = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  @media (max-width: 600px) {
-    flex-direction: column;
-  }
-`;
-
-const BarcodeSection = styled.div`
-  flex: 1;
-  background: #f9f9f9;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-`;
-
-const BarcodeImage = styled.img`
-  width: 150px;
-  height: auto;
-  margin-bottom: 0.5rem;
-`;
-
-const BarcodeValue = styled.div`
-  font-size: 0.9rem;
-  color: #1976d2; /* Números en azul */
-  letter-spacing: 0.1rem;
-`;
-
-const LocationsSection = styled.div`
+const FilterInput = styled.input`
   flex: 2;
-  background: #f9f9f9;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
 `;
 
-const LocationsTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 0.5rem;
+const FilterSelect = styled.select`
+  flex: 1;
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
 `;
 
-const LocationsTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-  thead {
-    background: #f0f0f0;
-    tr {
-      th {
-        text-align: left;
-        padding: 0.5rem;
-        color: #555;
-        font-weight: 600;
-      }
-    }
-  }
-  tbody {
-    tr {
-      border-bottom: 1px solid #ddd;
-      &:last-child {
-        border-bottom: none;
-      }
-      td {
-        padding: 0.5rem;
-        color: #555;
-      }
-    }
-  }
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+  gap: ${theme.spacing(2)};
 `;
 
-////////////////////////////////////////////////////////////////////////////////
-// StatusBadge
-////////////////////////////////////////////////////////////////////////////////
-
-interface StatusBadgeProps {
-  status: "OK" | "LOW" | "OUT";
-}
-const StatusBadge = styled.span<StatusBadgeProps>`
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.3rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  background-color: ${(props) =>
-    props.status === "OK"
-      ? "#C8E6C9"
-      : props.status === "LOW"
-      ? "#FFE082"
-      : "#FFCDD2"};
-  color: ${(props) =>
-    props.status === "OK"
-      ? "#2E7D32"
-      : props.status === "LOW"
-      ? "#795548"
-      : "#C62828"};
+const DataCard = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing(2)};
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 `;
 
-////////////////////////////////////////////////////////////////////////////////
-// Botón Cerrar
-////////////////////////////////////////////////////////////////////////////////
+const CardTitle = styled.div`
+  font-size: ${theme.font.sizes.small};
+  color: ${theme.colors.textSecondary};
+`;
 
-const CloseButton = styled.button`
-  align-self: flex-end;
-  background: #e53935;
+const CardNumber = styled.div`
+  font-size: 2rem;
+  font-weight: bold;
+`;
+
+const Charts = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: ${theme.spacing(2)};
+  height: 300px;
+`;
+
+const ChartWrapper = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.md};
+  padding: ${theme.spacing(1)};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+`;
+
+const FormContainer = styled.form`
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+  gap: ${theme.spacing(1)};
+  background: ${theme.colors.surface};
+  padding: ${theme.spacing(1)};
+  border-radius: ${theme.radii.md};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+`;
+
+const Select = styled.select`
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+`;
+
+const TextInput = styled.input`
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+`;
+
+const NumberInput = styled.input`
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+`;
+
+const DateInput = styled.input`
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+`;
+
+const TextArea = styled.textarea`
+  grid-column: span 2;
+  padding: ${theme.spacing(0.5)};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.sm};
+  resize: vertical;
+`;
+
+const ActionButton = styled.button<{ color?: string }>`
+  background: ${({ color }) => color || theme.colors.accent};
   color: #fff;
   border: none;
-  border-radius: 0.5rem;
-  padding: 0.7rem 1.5rem;
-  font-size: 1rem;
+  padding: ${theme.spacing(0.5)};
+  border-radius: ${theme.radii.sm};
   cursor: pointer;
-  transition: background 0.3s ease;
-  margin-top: 1rem;
-  &:hover {
-    background: #d32f2f;
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing(0.5)};
+  &:hover { opacity: 0.9; }
+`;
+
+const TableContainer = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.md};
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+`;
+
+const StyledTable = styled.table`
+  width: 100%; border-collapse: collapse;
+  th, td {
+    border: 1px solid ${theme.colors.border};
+    padding: ${theme.spacing(1)};
+    text-align: left;
+  }
+  th {
+    background: ${theme.colors.accentHover}20;
+    position: sticky; top: 0;
+  }
+  tbody tr:hover {
+    background: ${theme.colors.accentHover}10;
   }
 `;
 
-/** Componente para envolver números y darles color azul */
-const BlueNumber = styled.span`
-  color: #1976d2;
+const StatusBadge = styled.span<{ status: Mobilization['status'] }>`
+  padding: 0.25rem 0.5rem;
+  border-radius: ${theme.radii.sm};
+  color: #fff;
+  background: ${({ status }) =>
+    status === 'Pending'      ? theme.colors.pending :
+    status === 'In Progress' ? theme.colors.inProgress :
+                                theme.colors.completed};
+  font-size: ${theme.font.sizes.small};
 `;
+
+const Pagination = styled.div`
+  display: flex; justify-content: center; gap: ${theme.spacing(1)};
+  margin-top: ${theme.spacing(1)};
+`;
+
+const PageButton = styled.button`
+  padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
+  border: 1px solid ${theme.colors.border};
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.sm};
+  cursor: pointer;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+`;
+
+// ===== Component =====
+export default function MobilizationsPage() {
+  const [data, setData] = useState<Mobilization[]>(initialData);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All'|Mobilization['status']>('All');
+  const [page, setPage] = useState(1);
+
+  // Form state
+  const blank = {
+    item: '', from: '', to: '', qty: 0,
+    status: 'Pending' as Mobilization['status'],
+    date: '', responsible: '', priority: 'Medium' as Mobilization['priority'],
+    notes: '',
+  };
+  const [form, setForm] = useState<Omit<Mobilization,'id'>>(blank);
+  const [editingId, setEditingId] = useState<string|null>(null);
+
+  // Handlers
+  const handleFormChange = (e: ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm(f => ({
+      ...f,
+      [name]: name === 'qty' ? Number(value) : value,
+    }));
+  };
+  const handleAdd = (e: FormEvent) => {
+    e.preventDefault();
+    const nextId = `MOB-${String(data.length+1).padStart(3,'0')}`;
+    setData(d => [...d, { id: nextId, ...form }]);
+    setForm(blank);
+  };
+  const handleEditClick = (m: Mobilization) => {
+    setEditingId(m.id);
+    const { id, ...rest } = m;
+    setForm(rest);
+  };
+  const handleSave = () => {
+    setData(d => d.map(m => m.id === editingId ? { id: m.id, ...form } : m));
+    setEditingId(null);
+    setForm(blank);
+  };
+  const handleCancel = () => {
+    setEditingId(null);
+    setForm(blank);
+  };
+  const handleDelete = (id: string) => {
+    setData(d => d.filter(m => m.id !== id));
+  };
+
+  // Filters & pagination
+  const filtered = useMemo(() => data.filter(m =>
+    m.item.toLowerCase().includes(search.toLowerCase()) &&
+    (statusFilter === 'All' || m.status === statusFilter)
+  ), [data, search, statusFilter]);
+  const total     = filtered.length;
+  const pending   = filtered.filter(m => m.status==='Pending').length;
+  const inProg    = filtered.filter(m => m.status==='In Progress').length;
+  const completed = filtered.filter(m => m.status==='Completed').length;
+
+  const statusData = [
+    { name: 'Pending',      value: pending   },
+    { name: 'In Progress',  value: inProg    },
+    { name: 'Completed',    value: completed },
+  ];
+  const originCounts: Record<string,number> = {};
+  filtered.forEach(m => originCounts[m.from] = (originCounts[m.from]||0)+1);
+  const originData = Object.entries(originCounts).map(([from,count]) => ({ from, count }));
+
+  const perPage   = 10;
+  const pageCount = Math.ceil(total / perPage);
+  const pageData  = filtered.slice((page-1)*perPage, page*perPage);
+
+  useEffect(() => { if (page > pageCount) setPage(1); }, [pageCount]);
+
+  return (
+    <>
+      <GlobalStyle />
+      <Container>
+        <Header>
+          <FaTruckLoading size={32} color={theme.colors.accent} />
+          <Title>Stock Movements</Title>
+        </Header>
+
+        <FilterBar>
+          <FilterInput
+            placeholder="Search item..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <FilterSelect
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value as any)}
+          >
+            <option>All</option>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </FilterSelect>
+        </FilterBar>
+
+        <CardsGrid>
+          <DataCard><CardTitle>Total</CardTitle><CardNumber>{total}</CardNumber></DataCard>
+          <DataCard><CardTitle>Pending</CardTitle><CardNumber>{pending}</CardNumber></DataCard>
+          <DataCard><CardTitle>In Progress</CardTitle><CardNumber>{inProg}</CardNumber></DataCard>
+          <DataCard><CardTitle>Completed</CardTitle><CardNumber>{completed}</CardNumber></DataCard>
+        </CardsGrid>
+
+        <Charts>
+          <ChartWrapper>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label
+                >
+                  {statusData.map((_, i) => (
+                    <Cell key={i} fill={[
+                      theme.colors.pending,
+                      theme.colors.inProgress,
+                      theme.colors.completed,
+                    ][i]} />
+                  ))}
+                </Pie>
+                <Tooltip /><Legend verticalAlign="bottom" />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartWrapper>
+          <ChartWrapper>
+            <ResponsiveContainer>
+              <BarChart data={originData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} />
+                <XAxis dataKey="from" stroke={theme.colors.textSecondary} />
+                <YAxis stroke={theme.colors.textSecondary} />
+                <Tooltip /><Bar dataKey="count" fill={theme.colors.accent} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartWrapper>
+        </Charts>
+
+        <FormContainer onSubmit={editingId ? (e) => { e.preventDefault(); handleSave(); } : handleAdd}>
+          <Select name="item" value={form.item} onChange={handleFormChange} required>
+            <option value="" disabled>Select item</option>
+            {PRODUCTS.map(p => <option key={p}>{p}</option>)}
+          </Select>
+          <Select name="from" value={form.from} onChange={handleFormChange} required>
+            <option value="" disabled>From location</option>
+            {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+          </Select>
+          <Select name="to" value={form.to} onChange={handleFormChange} required>
+            <option value="" disabled>To location</option>
+            {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+          </Select>
+          <NumberInput
+            name="qty"
+            type="number"
+            min="1"
+            placeholder="Qty"
+            value={form.qty}
+            onChange={handleFormChange}
+            required
+          />
+          <DateInput
+            name="date"
+            type="date"
+            value={form.date}
+            onChange={handleFormChange}
+            required
+          />
+          <Select name="responsible" value={form.responsible} onChange={handleFormChange} required>
+            <option value="" disabled>Responsible</option>
+            {USERS.map(u => <option key={u}>{u}</option>)}
+          </Select>
+          <Select name="status" value={form.status} onChange={handleFormChange}>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Completed</option>
+          </Select>
+          <Select name="priority" value={form.priority} onChange={handleFormChange}>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </Select>
+          <TextArea
+            name="notes"
+            rows={2}
+            placeholder="Notes..."
+            value={form.notes}
+            onChange={handleFormChange}
+          />
+          {editingId ? (
+            <>
+              <ActionButton type="button" color={theme.colors.accent} onClick={handleSave}>
+                <FaSave /> Save
+              </ActionButton>
+              <ActionButton type="button" color={theme.colors.danger} onClick={handleCancel}>
+                <FaTimes /> Cancel
+              </ActionButton>
+            </>
+          ) : (
+            <ActionButton type="submit" color={theme.colors.accent}>
+              <FaPlus /> Add
+            </ActionButton>
+          )}
+        </FormContainer>
+
+        <TableContainer>
+          <StyledTable>
+            <thead>
+              <tr>
+                <th>ID</th><th>Item</th><th>From</th><th>To</th>
+                <th>Qty</th><th>Date</th><th>Status</th><th>Priority</th><th>Responsible</th><th>Notes</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageData.map(m => (
+                <tr key={m.id}>
+                  <td>{m.id}</td>
+                  <td>{m.item}</td>
+                  <td>{m.from}</td>
+                  <td>{m.to}</td>
+                  <td>{m.qty}</td>
+                  <td>{m.date}</td>
+                  <td><StatusBadge status={m.status}>{m.status}</StatusBadge></td>
+                  <td>{m.priority}</td>
+                  <td>{m.responsible}</td>
+                  <td>{m.notes}</td>
+                  <td>
+                    <ActionButton color={theme.colors.accentHover} onClick={() => handleEditClick(m)}>
+                      <FaEdit />
+                    </ActionButton>
+                    <ActionButton color={theme.colors.danger} onClick={() => handleDelete(m.id)}>
+                      <FaTrash />
+                    </ActionButton>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </StyledTable>
+        </TableContainer>
+
+        <Pagination>
+          <PageButton disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Prev</PageButton>
+          {Array.from({ length: pageCount }, (_, i) => (
+            <PageButton
+              key={i}
+              disabled={page === i + 1}
+              onClick={() => setPage(i + 1)}
+            >
+              {i + 1}
+            </PageButton>
+          ))}
+          <PageButton disabled={page >= pageCount} onClick={() => setPage(p => p + 1)}>Next</PageButton>
+        </Pagination>
+      </Container>
+    </>
+  );
+}

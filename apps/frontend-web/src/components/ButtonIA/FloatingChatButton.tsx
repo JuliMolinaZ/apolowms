@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { API_URL } from '../../lib/config';
+import { API_URL } from '@/lib/config';
 import styled from 'styled-components';
 import { useThemeContext } from '../ThemeContext';
 import { usePathname } from 'next/navigation';

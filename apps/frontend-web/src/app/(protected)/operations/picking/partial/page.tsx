@@ -1,356 +1,345 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
-import { API_URL } from '../../../../lib/config';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts';
+import { ShoppingCart, Clock, PackageCheck, PauseCircle } from 'lucide-react';
 
-// ===== Colores de ejemplo =====
-const backgroundColor = '#EAF5FA'; // Fondo general
-const cardBgColor = '#FFFFFF'; // Fondo de tarjetas y tabla
-const menuBgColor = '#FFFFFF'; // Fondo del submenú
-const hoverBgColor = '#f4f9fc'; // Hover en submenú y tabla
-const borderColor = '#d3e0e9'; // Bordes suaves
-const textColor = '#333'; // Color de texto principal
-const accentColor = '#5ce1e6'; // Botones y acentos
+// ===== Theme Tokens =====
+const theme = {
+  colors: {
+    background: '#EAF5FA',
+    cardBg: '#FFFFFF',
+    hoverBg: '#f4f9fc',
+    border: '#d3e0e9',
+    text: '#333333',
+    accent: '#5ce1e6',
+    accentHover: '#54c6d6',
+  },
+  spacing: (n: number) => `${n * 8}px`,
+  radii: {
+    sm: '6px',
+    md: '8px',
+    lg: '12px',
+  },
+  font: {
+    family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+    small: '0.9rem',
+    base: '1rem',
+    title: '1.1rem',
+    large: '2rem',
+  },
+};
 
-// ===== Estilos globales =====
+// ===== Global Styles =====
 const GlobalStyle = createGlobalStyle`
   body {
-    background-color: ${backgroundColor};
-    color: ${textColor};
+    background-color: ${theme.colors.background};
+    color: ${theme.colors.text};
     margin: 0;
     padding: 0;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: ${theme.font.family};
   }
 `;
 
-// ===== Contenedor principal del módulo =====
-const ModuleContainer = styled.div`
+// ===== Styled Components =====
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${theme.spacing(1)};
   display: flex;
   flex-direction: column;
-  /* Reducimos el padding top para acercar el contenido al header */
-  padding: 0rem 1rem 1rem 1rem;
-  gap: 1rem;
+  gap: ${theme.spacing(1)};
 `;
 
-// ===== Submenú horizontal (más cerca del top) =====
-const ModuleNavBar = styled.nav`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background-color: ${menuBgColor};
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid ${borderColor};
-  /* Minimiza margen top y bottom para acercarlo aún más */
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-`;
-
-const ModuleNavItem = styled.div<{ $active?: boolean }>`
-  padding: 0.5rem 0.75rem;
-  cursor: pointer;
-  border-radius: 6px;
-  font-weight: ${({ $active }) => ($active ? 'bold' : 'normal')};
-  background-color: ${({ $active }) =>
-    $active ? hoverBgColor : 'transparent'};
-
-  &:hover {
-    background-color: ${hoverBgColor};
-  }
-`;
-
-// ===== Contenedor de tarjetas (2x2) =====
-const CardsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
-`;
-
-const DataCard = styled.div`
-  background-color: ${cardBgColor};
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+const Header = styled.h1`
+  font-size: 2rem;
+  margin-bottom: ${theme.spacing(1)};
   text-align: center;
 `;
 
-const CardTitle = styled.h3`
-  margin: 0;
-  font-size: 1rem;
-  color: ${textColor};
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: ${theme.spacing(1)};
 `;
 
-const CardNumber = styled.div`
-  margin: 0.5rem 0;
-  font-size: 2rem;
-  font-weight: bold;
-  color: ${textColor};
-`;
-
-const CardInfo = styled.div`
-  font-size: 0.9rem;
-  color: #666;
-`;
-
-// ===== Botón de acción =====
-const ActionButton = styled.button`
-  background-color: ${accentColor};
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin: 0 0.25rem;
-
+const DataCard = styled.div`
+  background: ${theme.colors.cardBg};
+  border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing(2)};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
   &:hover {
-    background-color: #54c6d6;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   }
 `;
 
-// ===== Tabla de pickings =====
-const TableContainer = styled.div`
-  background-color: ${cardBgColor};
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+const CardTitle = styled.h3`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${theme.spacing(0.5)};
+  font-size: ${theme.font.title};
+  margin: 0;
 `;
 
-const TableTitle = styled.h3`
-  margin-top: 0;
+const CardNumber = styled.div`
+  font-size: ${theme.font.large};
+  font-weight: bold;
+  margin: ${theme.spacing(0.5)} 0;
+`;
+
+const CardInfo = styled.div`
+  font-size: ${theme.font.small};
+  color: #666;
+`;
+
+const ChartContainer = styled.div`
+  background: ${theme.colors.cardBg};
+  border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing(2)};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: 300px;
+`;
+
+const ActionButton = styled.button`
+  background: ${theme.colors.accent};
+  color: #fff;
+  border: none;
+  padding: ${theme.spacing(0.75)} ${theme.spacing(1)};
+  border-radius: ${theme.radii.md};
+  font-weight: bold;
+  cursor: pointer;
+  align-self: center;
+  margin: ${theme.spacing(1)} 0;
+  transition: background 0.3s;
+  &:hover {
+    background: ${theme.colors.accentHover};
+  }
+`;
+
+const TableWrapper = styled.div`
+  overflow-x: auto;
 `;
 
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0.5rem;
+  margin-top: ${theme.spacing(1)};
 
-  th,
-  td {
-    border: 1px solid ${borderColor};
-    padding: 0.75rem;
-    text-align: left;
+  th, td {
+    padding: ${theme.spacing(1)};
+    border-bottom: 1px solid ${theme.colors.border};
+    text-align: center;
   }
 
   th {
-    background-color: ${hoverBgColor};
+    background: ${theme.colors.hoverBg};
+    position: sticky;
+    top: 0;
+  }
+
+  tbody tr:nth-child(even) {
+    background: ${theme.colors.hoverBg};
   }
 
   tbody tr:hover {
-    background-color: ${hoverBgColor};
+    background: ${theme.colors.hoverBg};
   }
 `;
 
-// ===== Formulario para crear un nuevo picking =====
-const CreateForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-
-  input {
-    padding: 0.5rem;
-    border: 1px solid ${borderColor};
-    border-radius: 6px;
+const IconButton = styled.button`
+  background: ${theme.colors.accent};
+  border: none;
+  color: #fff;
+  padding: ${theme.spacing(0.5)};
+  margin: 0 ${theme.spacing(0.25)};
+  border-radius: ${theme.radii.sm};
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: ${theme.font.small};
+  &:hover {
+    background: ${theme.colors.accentHover};
   }
 `;
 
-// ===== Interfaz para un Picking (puedes ajustarla a tus campos reales) =====
+// ===== Types =====
 interface Picking {
   id: number;
   orderNumber: string;
   quantity: number;
 }
 
-export default function PickingPage() {
-  // ============= Lógica para las tarjetas (demo) ============
-  const pendingOrders = 54;
-  const pendingTime = '152 minutes per order';
+interface Trend {
+  day: string;
+  picks: number;
+}
 
-  const onHold = 10;
-  const onHoldTime = '58 minutes per order';
+// ===== Component =====
+export default function PickingDashboard() {
+  // Demo data
+  const demoPickings: Picking[] = [
+    { id: 1, orderNumber: 'A1001', quantity: 12 },
+    { id: 2, orderNumber: 'A1002', quantity: 8 },
+    { id: 3, orderNumber: 'A1003', quantity: 20 },
+    { id: 4, orderNumber: 'A1004', quantity: 5 },
+    { id: 5, orderNumber: 'A1005', quantity: 16 },
+  ];
+  const trendData: Trend[] = [
+    { day: 'Mon', picks: 120 },
+    { day: 'Tue', picks: 98 },
+    { day: 'Wed', picks: 132 },
+    { day: 'Thu', picks: 110 },
+    { day: 'Fri', picks: 145 },
+    { day: 'Sat', picks: 80 },
+    { day: 'Sun', picks: 60 },
+  ];
 
-  const inProcess = 123;
-  const inProcessTime = '120 minutes per order';
-
-  const onPallet = 12;
-  const onPalletTime = '23 minutes per order';
-
-  // ============= Lógica para la tabla de pickings ============
+  // State
   const [pickings, setPickings] = useState<Picking[]>([]);
-
-  // Estados para crear un nuevo picking
   const [newOrderNumber, setNewOrderNumber] = useState('');
   const [newQuantity, setNewQuantity] = useState<number>(0);
 
-  // Obtiene los pickings del backend
-  const fetchPickings = async () => {
-    try {
-      const res = await fetch(`${API_URL}/picking`);
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setPickings(data);
-      } else {
-        console.error('La respuesta no es un array:', data);
-        setPickings([]);
-      }
-    } catch (error) {
-      console.error('Error al obtener pickings:', error);
-    }
-  };
+  // KPIs
+  const totalPicks = demoPickings.reduce((sum, p) => sum + p.quantity, 0);
+  const avgPerOrder = (totalPicks / demoPickings.length).toFixed(1);
 
-  // Carga inicial de datos
+  // Fetch demo data
   useEffect(() => {
-    fetchPickings();
+    // In real use: fetch(`${API_URL}/picking`)...
+    setPickings(demoPickings);
   }, []);
 
-  // Crear un nuevo picking
-  const handleCreate = async (e: React.FormEvent) => {
+  // Handlers
+  const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch(`${API_URL}/picking`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderNumber: newOrderNumber,
-          quantity: newQuantity,
-        }),
-      });
-      if (!res.ok) {
-        console.error('Error al crear picking:', await res.text());
-      }
-      setNewOrderNumber('');
-      setNewQuantity(0);
-      fetchPickings(); // refresca la tabla
-    } catch (error) {
-      console.error('Error al crear picking:', error);
-    }
+    // POST to API_URL...
+    setPickings(prev => [
+      ...prev,
+      { id: prev.length + 1, orderNumber: newOrderNumber, quantity: newQuantity },
+    ]);
+    setNewOrderNumber('');
+    setNewQuantity(0);
   };
 
-  // Editar un picking (demo: aquí solo mostramos un log)
   const handleEdit = (id: number) => {
-    console.log('Editar picking con id:', id);
-    // Podrías abrir un modal para editar o navegar a otra ruta
+    alert(`Editar picking #${id}`);
   };
 
-  // Eliminar un picking
-  const handleDelete = async (id: number) => {
-    try {
-      const res = await fetch(`${API_URL}/picking/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) {
-        console.error('Error al eliminar picking:', await res.text());
-      }
-      fetchPickings(); // refresca la tabla
-    } catch (error) {
-      console.error('Error al eliminar picking:', error);
-    }
+  const handleDelete = (id: number) => {
+    setPickings(prev => prev.filter(p => p.id !== id));
   };
 
   return (
     <>
       <GlobalStyle />
+      <Container>
+        <Header>Picking Dashboard</Header>
 
-      <ModuleContainer>
-        {/* Submenú horizontal al tope */}
-        <ModuleNavBar>
-          <ModuleNavItem $active>My Operators</ModuleNavItem>
-          <ModuleNavItem>Incidents</ModuleNavItem>
-          <ModuleNavItem>Returns</ModuleNavItem>
-          <ModuleNavItem>Reports & Updates</ModuleNavItem>
-          <ModuleNavItem>Handheld Devices</ModuleNavItem>
-        </ModuleNavBar>
-
-        {/* Grid de tarjetas (2x2) con métricas */}
         <CardsGrid>
           <DataCard>
-            <CardTitle>To Be Picked / Pending Fulfillment</CardTitle>
-            <CardNumber>{pendingOrders}</CardNumber>
-            <CardInfo>Average Order Processing Time</CardInfo>
-            <CardInfo>{pendingTime}</CardInfo>
+            <CardTitle><ShoppingCart size={20} /> Total Picks Today</CardTitle>
+            <CardNumber>{totalPicks}</CardNumber>
+            <CardInfo>{demoPickings.length} orders</CardInfo>
           </DataCard>
-
           <DataCard>
-            <CardTitle>On Hold</CardTitle>
-            <CardNumber>{onHold}</CardNumber>
-            <CardInfo>Average Order Processing Time</CardInfo>
-            <CardInfo>{onHoldTime}</CardInfo>
+            <CardTitle><Clock size={20} /> Avg Qty / Order</CardTitle>
+            <CardNumber>{avgPerOrder}</CardNumber>
+            <CardInfo>per order</CardInfo>
           </DataCard>
-
           <DataCard>
-            <CardTitle>In Process / Processing</CardTitle>
-            <CardNumber>{inProcess}</CardNumber>
-            <CardInfo>Average Order Processing Time</CardInfo>
-            <CardInfo>{inProcessTime}</CardInfo>
+            <CardTitle><PackageCheck size={20} /> Avg Process Time</CardTitle>
+            <CardNumber>115 mins</CardNumber>
+            <CardInfo>per order</CardInfo>
           </DataCard>
-
           <DataCard>
-            <CardTitle>On Pallet / Palletized</CardTitle>
-            <CardNumber>{onPallet}</CardNumber>
-            <CardInfo>Average Order Processing Time</CardInfo>
-            <CardInfo>{onPalletTime}</CardInfo>
+            <CardTitle><PauseCircle size={20} /> On Hold Orders</CardTitle>
+            <CardNumber>4</CardNumber>
+            <CardInfo>awaiting stock</CardInfo>
           </DataCard>
+          <ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={trendData} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="day" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="picks" fill={theme.colors.accent} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </CardsGrid>
 
-        {/* Botón de acción */}
-        <ActionButton style={{ alignSelf: 'flex-start' }}>
-          View warehouses
+        <ActionButton onClick={() => alert('Ver reporte detallado')}>
+          View Detailed Report
         </ActionButton>
 
-        {/* Tabla con los pickings */}
-        <TableContainer>
-          <TableTitle>Pickings List</TableTitle>
+        <form onSubmit={handleCreate} style={{ display: 'flex', justifyContent: 'center', gap: theme.spacing(1) }}>
+          <input
+            type="text"
+            placeholder="Order #"
+            value={newOrderNumber}
+            onChange={e => setNewOrderNumber(e.target.value)}
+            required
+            style={{
+              padding: theme.spacing(1),
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.radii.sm,
+              width: '150px',
+            }}
+          />
+          <input
+            type="number"
+            placeholder="Qty"
+            value={newQuantity}
+            onChange={e => setNewQuantity(Number(e.target.value))}
+            required
+            style={{
+              padding: theme.spacing(1),
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.radii.sm,
+              width: '100px',
+            }}
+          />
+          <ActionButton type="submit">Add</ActionButton>
+        </form>
 
-          {/* Formulario para crear un nuevo picking */}
-          <CreateForm onSubmit={handleCreate}>
-            <input
-              type="text"
-              placeholder="Order Number"
-              value={newOrderNumber}
-              onChange={(e) => setNewOrderNumber(e.target.value)}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={newQuantity}
-              onChange={(e) => setNewQuantity(Number(e.target.value))}
-              required
-            />
-            <ActionButton type="submit">Add</ActionButton>
-          </CreateForm>
-
+        <TableWrapper>
           <StyledTable>
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Order Number</th>
-                <th>Quantity</th>
+                <th>Order #</th>
+                <th>Qty</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {pickings.map((p) => (
+              {pickings.map(p => (
                 <tr key={p.id}>
                   <td>{p.id}</td>
                   <td>{p.orderNumber}</td>
                   <td>{p.quantity}</td>
                   <td>
-                    <ActionButton onClick={() => handleEdit(p.id)}>
-                      Edit
-                    </ActionButton>
-                    <ActionButton onClick={() => handleDelete(p.id)}>
-                      Delete
-                    </ActionButton>
+                    <IconButton onClick={() => handleEdit(p.id)}>Edit</IconButton>
+                    <IconButton onClick={() => handleDelete(p.id)}>Delete</IconButton>
                   </td>
                 </tr>
               ))}
             </tbody>
           </StyledTable>
-        </TableContainer>
-      </ModuleContainer>
+        </TableWrapper>
+      </Container>
     </>
   );
 }

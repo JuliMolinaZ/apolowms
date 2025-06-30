@@ -1,49 +1,26 @@
 "use client";
+import React from "react";
+import DashboardMenuPage from "@/components/DashboardMenuPage";
 
-import Link from "next/link";
-import { Box, Grid, CardActionArea, Card, CardContent, Typography } from "@mui/material";
+const logosMapping = {
+  picking: "pickin.svg",
+  packing: "packing.svg",
+  putaway: "putaway.svg",
+};
 
-export default function OperationsIndexPage() {
+const cards = [
+  { key: "picking", number: 12, route: "/operations/picking" },
+  { key: "packing", number: 32, route: "/operations/packing" },
+  { key: "putaway", number: 21, route: "/operations/putaway" },
+];
+
+export default function OperationsPage() {
   return (
-    <Box p={2}>
-      <Typography variant="h4" gutterBottom>
-        Operations
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={4}>
-          <Link href="/operations/picking" passHref>
-            <CardActionArea component="a">
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6">Picking</Typography>
-                </CardContent>
-              </Card>
-            </CardActionArea>
-          </Link>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Link href="/operations/packing" passHref>
-            <CardActionArea component="a">
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6">Packing</Typography>
-                </CardContent>
-              </Card>
-            </CardActionArea>
-          </Link>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Link href="/operations/putaway" passHref>
-            <CardActionArea component="a">
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6">Putaway</Typography>
-                </CardContent>
-              </Card>
-            </CardActionArea>
-          </Link>
-        </Grid>
-      </Grid>
-    </Box>
+    <DashboardMenuPage
+      title="Operations"      
+      cards={cards}
+      logosMapping={logosMapping}
+      showWelcome={false}    
+    />
   );
 }

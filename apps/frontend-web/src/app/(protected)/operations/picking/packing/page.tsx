@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState, ChangeEvent, FormEvent } from "react";
-import styled from "styled-components";
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+import styled, { createGlobalStyle } from 'styled-components';
 import {
   ResponsiveContainer,
   PieChart,
   Pie,
+  Cell,
   Tooltip,
   Legend,
   BarChart,
@@ -13,11 +14,147 @@ import {
   XAxis,
   YAxis,
   Bar,
-  Cell,
-} from "recharts";
-import { FaBoxes, FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
+} from 'recharts';
+import { FaBoxes, FaEdit, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
+import { ShoppingCart, Clock, PackageCheck, PauseCircle } from 'lucide-react';
 
-// Interfaz para Packing
+// ===== Theme Tokens =====
+const theme = {
+  colors: {
+    background: '#EAF5FA',
+    surface: '#FFFFFF',
+    border: '#d3e0e9',
+    text: '#333333',
+    textSecondary: '#666666',
+    accent: '#5ce1e6',
+    accentHover: '#54c6d6',
+  },
+  spacing: (n: number) => `${n * 8}px`,
+  radii: { sm: '6px', md: '8px', lg: '12px' },
+  font: {
+    family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+    sizes: { small: '0.9rem', base: '1rem', title: '1.1rem', large: '2rem' },
+  },
+};
+
+// ===== Global Styles =====
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${theme.colors.background};
+    color: ${theme.colors.text};
+    margin: 0;
+    padding: 0;
+    font-family: ${theme.font.family};
+  }
+`;
+
+// ===== Styled Components =====
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${theme.spacing(1)};
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing(1)};
+`;
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing(1)};
+  margin-bottom: ${theme.spacing(1)};
+`;
+const Title = styled.h1`
+  font-size: ${theme.font.sizes.large};
+  margin: 0;
+`;
+const Subtitle = styled.p`
+  font-size: ${theme.font.sizes.base};
+  color: ${theme.colors.textSecondary};
+  margin: 0;
+`;
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: ${theme.spacing(1)};
+`;
+const DataCard = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing(2)};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+`;
+const CardTitle = styled.h3`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${theme.spacing(0.5)};
+  font-size: ${theme.font.sizes.base};
+  margin: 0;
+`;
+const CardNumber = styled.div`
+  font-size: ${theme.font.sizes.large};
+  font-weight: bold;
+  margin: ${theme.spacing(0.5)} 0;
+`;
+const CardInfo = styled.div`
+  font-size: ${theme.font.sizes.small};
+  color: ${theme.colors.textSecondary};
+`;
+const ChartContainer = styled.div`
+  background: ${theme.colors.surface};
+  border-radius: ${theme.radii.lg};
+  padding: ${theme.spacing(2)};
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: 300px;
+`;
+const TableWrapper = styled.div`
+  overflow-x: auto;
+  margin-top: ${theme.spacing(1)};
+`;
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  th, td {
+    padding: ${theme.spacing(1)};
+    border-bottom: 1px solid ${theme.colors.border};
+    text-align: left;
+  }
+  th {
+    background: ${theme.colors.background};
+    position: sticky;
+    top: 0;
+    font-weight: bold;
+  }
+  tbody tr:nth-child(even) { background: ${theme.colors.background}; }
+  tbody tr:hover { background: ${theme.colors.accent}10; }
+`;
+const ActionButton = styled.button`
+  background: ${theme.colors.accent};
+  color: #fff;
+  border: none;
+  padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
+  border-radius: ${theme.radii.md};
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  &:hover { background: ${theme.colors.accentHover}; }
+`;
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: ${theme.spacing(0.5)};
+  margin-right: ${theme.spacing(0.5)};
+  font-size: ${theme.font.sizes.base};
+`;
+
+// ===== Types =====
 interface Packing {
   id: number;
   packingId: string;
@@ -26,514 +163,173 @@ interface Packing {
   packingDate: string;
   status: string;
 }
+interface StatusDatum { name: string; value: number; }
 
-// Datos demo iniciales
-const initialPackings: Packing[] = [
-  {
-    id: 1,
-    packingId: "PKG-001",
-    product: "Producto A",
-    quantity: 100,
-    packingDate: "2025-04-14T08:30:00",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    packingId: "PKG-002",
-    product: "Producto B",
-    quantity: 50,
-    packingDate: "2025-04-15T09:00:00",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    packingId: "PKG-003",
-    product: "Producto C",
-    quantity: 75,
-    packingDate: "2025-04-15T10:15:00",
-    status: "In Progress",
-  },
-  {
-    id: 4,
-    packingId: "PKG-004",
-    product: "Producto D",
-    quantity: 200,
-    packingDate: "2025-04-16T11:45:00",
-    status: "Completed",
-  },
-  {
-    id: 5,
-    packingId: "PKG-005",
-    product: "Producto E",
-    quantity: 120,
-    packingDate: "2025-04-16T14:30:00",
-    status: "Pending",
-  },
-  {
-    id: 6,
-    packingId: "PKG-006",
-    product: "Producto F",
-    quantity: 30,
-    packingDate: "2025-04-17T09:20:00",
-    status: "In Progress",
-  },
-  {
-    id: 7,
-    packingId: "PKG-007",
-    product: "Producto G",
-    quantity: 60,
-    packingDate: "2025-04-17T15:00:00",
-    status: "Completed",
-  },
-  {
-    id: 8,
-    packingId: "PKG-008",
-    product: "Producto H",
-    quantity: 90,
-    packingDate: "2025-04-18T10:00:00",
-    status: "Pending",
-  },
+// ===== Demo Data =====
+const initialData: Packing[] = [
+  { id: 1, packingId: 'PKG-001', product: 'Producto A', quantity: 100, packingDate: '2025-04-14T08:30:00', status: 'Completed' },
+  { id: 2, packingId: 'PKG-002', product: 'Producto B', quantity: 50,  packingDate: '2025-04-15T09:00:00', status: 'Pending' },
+  { id: 3, packingId: 'PKG-003', product: 'Producto C', quantity: 75,  packingDate: '2025-04-15T10:15:00', status: 'In Progress' },
+  { id: 4, packingId: 'PKG-004', product: 'Producto D', quantity: 200, packingDate: '2025-04-16T11:45:00', status: 'Completed' },
+  { id: 5, packingId: 'PKG-005', product: 'Producto E', quantity: 120, packingDate: '2025-04-16T14:30:00', status: 'Pending' },
+  { id: 6, packingId: 'PKG-006', product: 'Producto F', quantity: 30,  packingDate: '2025-04-17T09:20:00', status: 'In Progress' },
+  { id: 7, packingId: 'PKG-007', product: 'Producto G', quantity: 60,  packingDate: '2025-04-17T15:00:00', status: 'Completed' },
+  { id: 8, packingId: 'PKG-008', product: 'Producto H', quantity: 90,  packingDate: '2025-04-18T10:00:00', status: 'Pending' },
+];
+const pieColors = [theme.colors.accent, theme.colors.accentHover, theme.colors.border];
+const getStatusData = (data: Packing[]): StatusDatum[] => [
+  { name: 'Completed', value: data.filter(d => d.status === 'Completed').length },
+  { name: 'Pending',   value: data.filter(d => d.status === 'Pending').length },
+  { name: 'In Progress',value: data.filter(d => d.status === 'In Progress').length },
 ];
 
-// Colores para el gráfico de pastel
-const pieColors = ["#4BBF73", "#F9A826", "#FF5757"];
-
-// Preparamos la data para el gráfico de pastel (distribución de estados)
-const getStatusData = (packings: Packing[]) => [
-  { name: "Completed", value: packings.filter((p) => p.status === "Completed").length },
-  { name: "Pending", value: packings.filter((p) => p.status === "Pending").length },
-  { name: "In Progress", value: packings.filter((p) => p.status === "In Progress").length },
-];
-
-export default function PackingPage() {
-  // Estado que mantiene todos los packings (simulando data del backend)
-  const [packings, setPackings] = useState<Packing[]>(initialPackings);
-
-  // Estado para el formulario de adición de un nuevo packing
-  const [newPacking, setNewPacking] = useState<Omit<Packing, "id">>({
-    packingId: "",
-    product: "",
-    quantity: 0,
-    packingDate: "",
-    status: "",
-  });
-
-  // Estado para controlar la edición: almacena el ID del packing en edición y sus datos temporales
+// ===== Component =====
+export default function PackingDashboard() {
+  const [data, setData] = useState<Packing[]>([]);
+  const [form, setForm] = useState<Omit<Packing,'id'>>({ packingId: '', product: '', quantity: 0, packingDate: '', status: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editPacking, setEditPacking] = useState<Omit<Packing, "id">>({
-    packingId: "",
-    product: "",
-    quantity: 0,
-    packingDate: "",
-    status: "",
-  });
+  const [editForm, setEditForm] = useState<Omit<Packing,'id'>>(form);
 
-  // Maneja cambios en el formulario de nuevo packing
-  const handleNewInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Load demo data
+  useEffect(() => { setData(initialData); }, []);
+
+  // Handlers
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewPacking({
-      ...newPacking,
-      // Para quantity, convertimos a número
-      [name]: name === "quantity" ? Number(value) : value,
-    });
+    setForm(f => ({ ...f, [name]: name === 'quantity' ? +value : value }));
   };
-
-  // Agrega un nuevo packing
-  const handleAddPacking = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const newId = packings.length > 0 ? Math.max(...packings.map((p) => p.id)) + 1 : 1;
-    const packingToAdd = { id: newId, ...newPacking };
-    setPackings([...packings, packingToAdd]);
-    setNewPacking({ packingId: "", product: "", quantity: 0, packingDate: "", status: "" });
+    const newId = data.length ? Math.max(...data.map(d=>d.id)) + 1 : 1;
+    setData(prev => [...prev, { id: newId, ...form }]);
+    setForm({ packingId: '', product: '', quantity: 0, packingDate: '', status: '' });
   };
-
-  // Inicia la edición de un packing
-  const handleEditClick = (packing: Packing) => {
-    setEditingId(packing.id);
-    setEditPacking({
-      packingId: packing.packingId,
-      product: packing.product,
-      quantity: packing.quantity,
-      packingDate: packing.packingDate,
-      status: packing.status,
-    });
-  };
-
-  // Maneja cambios en el formulario de edición
-  const handleEditInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const startEdit = (p: Packing) => { setEditingId(p.id); setEditForm({ ...p }); };
+  const handleEditChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setEditPacking({
-      ...editPacking,
-      [name]: name === "quantity" ? Number(value) : value,
-    });
+    setEditForm(f => ({ ...f, [name]: name === 'quantity' ? +value : value }));
   };
-
-  // Guarda los cambios de edición
-  const handleSaveEdit = (id: number) => {
-    const updatedPackings = packings.map((p) =>
-      p.id === id ? { id, ...editPacking } : p
-    );
-    setPackings(updatedPackings);
+  const saveEdit = (id: number) => {
+    setData(d => d.map(p => p.id === id ? { id, ...editForm } : p));
     setEditingId(null);
   };
+  const cancelEdit = () => setEditingId(null);
+  const deleteRow = (id: number) => setData(d => d.filter(p => p.id !== id));
 
-  // Cancela la edición
-  const handleCancelEdit = () => {
-    setEditingId(null);
-  };
-
-  // Borra un packing por ID
-  const handleDelete = (id: number) => {
-    const updatedPackings = packings.filter((p) => p.id !== id);
-    setPackings(updatedPackings);
-  };
+  // KPIs
+  const total = data.length;
+  const completed = getStatusData(data)[0].value;
+  const pending   = getStatusData(data)[1].value;
+  const inProg    = getStatusData(data)[2].value;
 
   return (
-    <Container>
-      {/* Header */}
-      <Header>
-        <FaBoxes size={40} color="#4BBF73" />
-        <Title>Módulo Packing</Title>
-      </Header>
-      <Subtitle>Coordinación y seguimiento de packing</Subtitle>
+    <>
+      <GlobalStyle />
+      <Container>
+        <Header>
+          <FaBoxes size={32} color={theme.colors.accent} />
+          <div>
+            <Title>Packing Dashboard</Title>
+            <Subtitle>Coordinación y seguimiento de packing</Subtitle>
+          </div>
+        </Header>
 
-      {/* Formulario para agregar nuevo packing */}
-      <FormContainer onSubmit={handleAddPacking}>
-        <Input
-          name="packingId"
-          placeholder="Packing ID"
-          value={newPacking.packingId}
-          onChange={handleNewInputChange}
-          required
-        />
-        <Input
-          name="product"
-          placeholder="Producto"
-          value={newPacking.product}
-          onChange={handleNewInputChange}
-          required
-        />
-        <Input
-          type="number"
-          name="quantity"
-          placeholder="Cantidad"
-          value={newPacking.quantity === 0 ? "" : newPacking.quantity}
-          onChange={handleNewInputChange}
-          required
-        />
-        <Input
-          type="datetime-local"
-          name="packingDate"
-          value={newPacking.packingDate}
-          onChange={handleNewInputChange}
-          required
-        />
-        <Input
-          name="status"
-          placeholder="Estado"
-          value={newPacking.status}
-          onChange={handleNewInputChange}
-          required
-        />
-        <SubmitButton type="submit">Agregar Packing</SubmitButton>
-      </FormContainer>
+        {/* KPI Cards + Pie Chart */}
+        <CardsGrid>
+          <DataCard>
+            <CardTitle><ShoppingCart size={20} /> Total Packings</CardTitle>
+            <CardNumber>{total}</CardNumber>
+            <CardInfo>records</CardInfo>
+          </DataCard>
+          <DataCard>
+            <CardTitle><PackageCheck size={20} /> Completed</CardTitle>
+            <CardNumber>{completed}</CardNumber>
+            <CardInfo>records</CardInfo>
+          </DataCard>
+          <DataCard>
+            <CardTitle><Clock size={20} /> Pending</CardTitle>
+            <CardNumber>{pending}</CardNumber>
+            <CardInfo>records</CardInfo>
+          </DataCard>
+          <DataCard>
+            <CardTitle><PauseCircle size={20} /> In Progress</CardTitle>
+            <CardNumber>{inProg}</CardNumber>
+            <CardInfo>records</CardInfo>
+          </DataCard>
+          <ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={getStatusData(data)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                  {getStatusData(data).map((entry,index) => (
+                    <Cell key={index} fill={pieColors[index]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardsGrid>
 
-      {/* Tarjetas resumen */}
-      <CardContainer>
-        <Card>
-          <CardTitle>Total Packings</CardTitle>
-          <CardValue>{packings.length}</CardValue>
-        </Card>
-        <Card>
-          <CardTitle>Completed</CardTitle>
-          <CardValue>{packings.filter((p) => p.status === "Completed").length}</CardValue>
-        </Card>
-        <Card>
-          <CardTitle>Pending</CardTitle>
-          <CardValue>{packings.filter((p) => p.status === "Pending").length}</CardValue>
-        </Card>
-        <Card>
-          <CardTitle>In Progress</CardTitle>
-          <CardValue>{packings.filter((p) => p.status === "In Progress").length}</CardValue>
-        </Card>
-      </CardContainer>
+        {/* Add Packing Form */}
+        <form onSubmit={handleSubmit} style={{ display:'flex', gap: theme.spacing(1), flexWrap:'wrap', margin: theme.spacing(1) + ' 0' }}>
+          <input name="packingId" placeholder="Packing ID" value={form.packingId} onChange={handleChange} required style={{padding:theme.spacing(1),border:`1px solid ${theme.colors.border}`,borderRadius:theme.radii.sm}} />
+          <input name="product" placeholder="Product" value={form.product} onChange={handleChange} required style={{padding:theme.spacing(1),border:`1px solid ${theme.colors.border}`,borderRadius:theme.radii.sm}} />
+          <input name="quantity" type="number" placeholder="Qty" value={form.quantity||''} onChange={handleChange} required style={{padding:theme.spacing(1),border:`1px solid ${theme.colors.border}`,borderRadius:theme.radii.sm,width:'80px'}} />
+          <input name="packingDate" type="datetime-local" value={form.packingDate} onChange={handleChange} required style={{padding:theme.spacing(1),border:`1px solid ${theme.colors.border}`,borderRadius:theme.radii.sm}} />
+          <input name="status" placeholder="Status" value={form.status} onChange={handleChange} required style={{padding:theme.spacing(1),border:`1px solid ${theme.colors.border}`,borderRadius:theme.radii.sm}} />
+          <ActionButton type="submit">Add</ActionButton>
+        </form>
 
-      {/* Tabla con opciones para editar y borrar */}
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Packing ID</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Fecha de Packing</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {packings.map((packing) => (
-              <tr key={packing.id}>
-                <td>{packing.id}</td>
-                <td>
-                  {editingId === packing.id ? (
-                    <InputSmall
-                      name="packingId"
-                      value={editPacking.packingId}
-                      onChange={handleEditInputChange}
-                      required
-                    />
-                  ) : (
-                    packing.packingId
-                  )}
-                </td>
-                <td>
-                  {editingId === packing.id ? (
-                    <InputSmall
-                      name="product"
-                      value={editPacking.product}
-                      onChange={handleEditInputChange}
-                      required
-                    />
-                  ) : (
-                    packing.product
-                  )}
-                </td>
-                <td>
-                  {editingId === packing.id ? (
-                    <InputSmall
-                      type="number"
-                      name="quantity"
-                      value={editPacking.quantity === 0 ? "" : editPacking.quantity}
-                      onChange={handleEditInputChange}
-                      required
-                    />
-                  ) : (
-                    packing.quantity
-                  )}
-                </td>
-                <td>
-                  {editingId === packing.id ? (
-                    <InputSmall
-                      type="datetime-local"
-                      name="packingDate"
-                      value={editPacking.packingDate}
-                      onChange={handleEditInputChange}
-                      required
-                    />
-                  ) : (
-                    new Date(packing.packingDate).toLocaleString()
-                  )}
-                </td>
-                <td>
-                  {editingId === packing.id ? (
-                    <InputSmall
-                      name="status"
-                      value={editPacking.status}
-                      onChange={handleEditInputChange}
-                      required
-                    />
-                  ) : (
-                    packing.status
-                  )}
-                </td>
-                <td>
-                  {editingId === packing.id ? (
-                    <>
-                      <ActionButton onClick={() => handleSaveEdit(packing.id)} color="#4BBF73">
-                        <FaSave />
-                      </ActionButton>
-                      <ActionButton onClick={handleCancelEdit} color="#FF5757">
-                        <FaTimes />
-                      </ActionButton>
-                    </>
-                  ) : (
-                    <>
-                      <ActionButton onClick={() => handleEditClick(packing)} color="#F9A826">
-                        <FaEdit />
-                      </ActionButton>
-                      <ActionButton onClick={() => handleDelete(packing.id)} color="#FF5757">
-                        <FaTrash />
-                      </ActionButton>
-                    </>
-                  )}
-                </td>
+        {/* Packing Table */}
+        <TableWrapper>
+          <StyledTable>
+            <thead>
+              <tr>
+                <th>ID</th><th>Packing ID</th><th>Product</th><th>Qty</th><th>Date</th><th>Status</th><th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </TableContainer>
+            </thead>
+            <tbody>
+              {data.map(p => (
+                <tr key={p.id}>
+                  <td>{p.id}</td>
+                  <td>{editingId===p.id ? <input name="packingId" value={editForm.packingId} onChange={handleEditChange} style={{width:'100%',padding:theme.spacing(0.5)}}/> : p.packingId}</td>
+                  <td>{editingId===p.id ? <input name="product" value={editForm.product} onChange={handleEditChange} style={{width:'100%',padding:theme.spacing(0.5)}}/> : p.product}</td>
+                  <td>{editingId===p.id ? <input name="quantity" type="number" value={editForm.quantity||''} onChange={handleEditChange} style={{width:'60px',padding:theme.spacing(0.5)}}/> : p.quantity}</td>
+                  <td>{editingId===p.id ? <input name="packingDate" type="datetime-local" value={editForm.packingDate} onChange={handleEditChange} style={{padding:theme.spacing(0.5)}}/> : new Date(p.packingDate).toLocaleString()}</td>
+                  <td>{editingId===p.id ? <input name="status" value={editForm.status} onChange={handleEditChange} style={{width:'100%',padding:theme.spacing(0.5)}}/> : p.status}</td>
+                  <td>
+                    {editingId===p.id ? (
+                      <>
+                        <IconButton onClick={() => saveEdit(p.id)}><FaSave color={theme.colors.accent}/></IconButton>
+                        <IconButton onClick={cancelEdit}><FaTimes color={theme.colors.accentHover}/></IconButton>
+                      </>
+                    ) : (
+                      <>
+                        <IconButton onClick={() => startEdit(p)}><FaEdit color={theme.colors.accentHover}/></IconButton>
+                        <IconButton onClick={() => deleteRow(p.id)}><FaTrash color={theme.colors.accentHover}/></IconButton>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </StyledTable>
+        </TableWrapper>
 
-      {/* Gráficos con colores vibrantes */}
-      <ChartsContainer>
-        {/* Pie Chart: Distribución de estados */}
-        <ChartWrapper>
-          <ChartTitle>Distribución por Estado</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie dataKey="value" data={getStatusData(packings)} cx="50%" cy="50%" outerRadius={80} label>
-                {getStatusData(packings).map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-        {/* Bar Chart: Cantidad por Producto */}
-        <ChartWrapper>
-          <ChartTitle>Cantidad por Producto</ChartTitle>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={packings}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
+        {/* Quantity by Product Bar Chart */}
+        <ChartContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top:20, right:20, left:0, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={theme.colors.border} />
               <XAxis dataKey="product" />
               <YAxis />
               <Tooltip />
-              <Legend />
-              <Bar dataKey="quantity" fill="#82ca9d" name="Cantidad" />
+              <Bar dataKey="quantity" fill={theme.colors.accent} />
             </BarChart>
           </ResponsiveContainer>
-        </ChartWrapper>
-      </ChartsContainer>
-    </Container>
+        </ChartContainer>
+      </Container>
+    </>
   );
 }
-
-/* ============================
-   Estilos con styled-components
-   ============================ */
-const Container = styled.div`
-  padding: 2rem;
-  background-color: #f4f7fa;
-  min-height: 100vh;
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-`;
-
-const Title = styled.h1`
-  color: #333;
-  font-size: 2rem;
-  font-weight: bold;
-`;
-
-const Subtitle = styled.p`
-  color: #555;
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-`;
-
-const FormContainer = styled.form`
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-`;
-
-const Input = styled.input`
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
-  flex: 1 1 150px;
-`;
-
-const InputSmall = styled(Input)`
-  width: 100%;
-  flex: unset;
-  margin-bottom: 0.5rem;
-`;
-
-const SubmitButton = styled.button`
-  background-color: #4BBF73;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-`;
-
-const CardContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-`;
-
-const Card = styled.div`
-  background-color: #fff;
-  padding: 1rem 1.5rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  flex: 1 1 180px;
-  text-align: center;
-`;
-
-const CardTitle = styled.p`
-  margin: 0;
-  font-size: 1rem;
-  color: #777;
-`;
-
-const CardValue = styled.p`
-  margin: 0.5rem 0 0;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-`;
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  margin-bottom: 2rem;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-
-  th, td {
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-    text-align: left;
-  }
-
-  th {
-    background-color: #f0f0f0;
-  }
-`;
-
-const ActionButton = styled.button<{ color: string }>`
-  background-color: transparent;
-  border: none;
-  color: ${(props) => props.color};
-  cursor: pointer;
-  margin-right: 0.5rem;
-  font-size: 1rem;
-`;
-
-const ChartsContainer = styled.div`
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-`;
-
-const ChartWrapper = styled.div`
-  background-color: #fff;
-  flex: 1 1 400px;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-`;
-
-const ChartTitle = styled.h2`
-  font-size: 1.2rem;
-  color: #333;
-  margin-bottom: 1rem;
-`;

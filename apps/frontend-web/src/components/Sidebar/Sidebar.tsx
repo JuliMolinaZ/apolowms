@@ -11,6 +11,7 @@ import {
   Collapse,
   Box,
   Button,
+  Divider,
   IconButton,
   useTheme,
   Tooltip,
@@ -27,8 +28,8 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const COLLAPSED_WIDTH = 0;
-const EXPANDED_WIDTH = 240;
+const COLLAPSED_WIDTH = 96;
+const EXPANDED_WIDTH  = 240;
 
 const drawerVariants: Variants = {
   open: {
@@ -49,10 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
   const theme = useTheme();
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useTranslation("common", { keyPrefix: "sidebar" });
+  const { t } = useTranslation();
   const [openSubs, setOpenSubs] = useState<Record<string, boolean>>({});
-
-  if (!open) return null;
 
   const toggleSub = (label: string) =>
     setOpenSubs((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -71,10 +70,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
         component: motion.div,
         variants: drawerVariants,
         initial: "closed",
-        animate: "open",
+        animate: open ? "open" : "closed",
         sx: {
           overflowX: "hidden",
-          bgcolor: "common.white",
+          bgcolor: theme.palette.grey[50],
           boxShadow: theme.shadows[4],
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
@@ -89,154 +88,187 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
           height: 64,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "common.white",
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          justifyContent: open ? "center" : "flex-start",
+          px: open ? 0 : 2,
         }}
       >
         <img
           src="/logos/Apoloware.svg"
           alt="Apoloware"
-          style={{ height: 48, width: "auto" }}
+          style={{
+            height: 48,
+            width: open ? "auto" : 32,
+            transition: "width .2s",
+          }}
         />
       </Box>
 
+      <Divider />
+
       {/* Lista de items */}
-      <List sx={{ flexGrow: 1, p: 0 }}>
-        {sidebarItems.map((item: SidebarItem, i: number) => {
-          const active = pathname === item.path;
-          const hasSubs = item.subItems.length > 0;
-          const expanded = !!openSubs[item.label];
+      <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+        <List disablePadding>
+          {sidebarItems.map((item: SidebarItem, i: number) => {
+            const active = pathname === item.path;
+            const hasSubs = item.subItems.length > 0;
+            const expanded = !!openSubs[item.label];
 
-          return (
-            <React.Fragment key={i}>
-              <ListItemButton
-                onClick={() =>
-                  hasSubs ? toggleSub(item.label) : navigateTo(item.path)
-                }
-                component={motion.div}
-                variants={itemHover}
-                whileHover="hover"
-                sx={{
-                  px: 2.5,
-                  py: 1.25,
-                  borderRadius: 2,
-                  bgcolor: active
-                    ? theme.palette.action.selected
-                    : "transparent",
-                  "&:hover": { bgcolor: theme.palette.action.hover },
-                }}
-              >
-                <Tooltip title={t(item.label)} placement="right">
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      mr: 2,
-                      justifyContent: "center",
-                      color: active
-                        ? theme.palette.primary.main
-                        : theme.palette.text.secondary,
-                    }}
-                  >
-                    <img
-                      src={`/logos/${item.icon}`}
-                      alt={item.label}
-                      style={{ width: 24, height: 24 }}
-                    />
-                  </ListItemIcon>
-                </Tooltip>
-
-                <ListItemText
-                  primary={t(item.label)}
+            return (
+              <React.Fragment key={i}>
+                <ListItemButton
+                  onClick={() =>
+                    hasSubs ? toggleSub(item.label) : navigateTo(item.path)
+                  }
+                  component={motion.div}
+                  variants={itemHover}
+                  whileHover="hover"
                   sx={{
-                    color: theme.palette.text.primary,
-                    fontWeight: 500,
+                    borderLeft: active
+                      ? `4px solid ${theme.palette.primary.main}`
+                      : "4px solid transparent",
+                    pl: open ? 3 : 2,
+                    py: open ? 1.5 : 1,
+                    borderRadius: 2,
+                    bgcolor: active
+                      ? theme.palette.action.selected
+                      : "transparent",
+                    "&:hover": { bgcolor: "rgba(0,0,0,0.04)" },
+                    display: "flex",
+                    alignItems: "center",
                   }}
-                />
-
-                {hasSubs && (
-                  <IconButton
-                    edge="end"
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSub(item.label);
-                    }}
-                    sx={{
-                      ml: "auto",
-                      transform: expanded
-                        ? "rotate(180deg)"
-                        : "rotate(0deg)",
-                      transition: "transform .3s",
-                    }}
+                >
+                  <Tooltip
+                    title={t(item.label)}
+                    placement="right"
+                    disableHoverListener={open}
                   >
-                    <ExpandMoreIcon />
-                  </IconButton>
-                )}
-              </ListItemButton>
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 2 : 0,
+                        justifyContent: "center",
+                        "& svg, & img": {
+                          fontSize: open ? 32 : 28,
+                          width: open ? 32 : 28,
+                          height: open ? 32 : 28,
+                        },
+                      }}
+                    >
+                      <img
+                        src={`/logos/${item.icon}`}
+                        alt={item.label}
+                      />
+                    </ListItemIcon>
+                  </Tooltip>
 
-              {hasSubs && (
-                <Collapse in={expanded} timeout="auto" unmountOnExit>
-                  <List disablePadding>
-                    {item.subItems.map((sub, j) => {
-                      const subActive = pathname === sub.path;
-                      return (
-                        <ListItemButton
-                          key={j}
-                          onClick={() => navigateTo(sub.path)}
-                          component={motion.div}
-                          variants={itemHover}
-                          whileHover="hover"
-                          sx={{
-                            pl: 6,
-                            py: 1,
-                            borderRadius: 2,
-                            bgcolor: subActive
-                              ? theme.palette.action.selected
-                              : "transparent",
-                            "&:hover": {
-                              bgcolor: theme.palette.action.hover,
-                            },
-                          }}
-                        >
-                          <ListItemIcon
+                  <ListItemText
+                    primary={t(item.label)}
+                    primaryTypographyProps={{
+                      noWrap: true,
+                      style: {
+                        opacity: open ? 1 : 0,
+                        width: open ? "auto" : 0,
+                        transition: "opacity .2s, width .2s",
+                        letterSpacing: "0.5px",
+                        fontWeight: 500,
+                      },
+                    }}
+                  />
+
+                  {hasSubs && open && (
+                    <IconButton
+                      edge="end"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSub(item.label);
+                      }}
+                      sx={{
+                        ml: "auto",
+                        transform: expanded
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
+                        transition: "transform .3s",
+                      }}
+                    >
+                      <ExpandMoreIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </ListItemButton>
+
+                {/* Sub-items */}
+                {hasSubs && (
+                  <Collapse in={expanded && open} timeout="auto" unmountOnExit>
+                    <List disablePadding>
+                      {item.subItems.map((sub, j) => {
+                        const subActive = pathname === sub.path;
+                        return (
+                          <ListItemButton
+                            key={j}
+                            onClick={() => navigateTo(sub.path)}
+                            component={motion.div}
+                            variants={itemHover}
+                            whileHover="hover"
                             sx={{
-                              minWidth: 0,
-                              mr: 2,
-                              justifyContent: "center",
-                              color: subActive
-                                ? theme.palette.primary.main
-                                : theme.palette.text.secondary,
+                              borderLeft: subActive
+                                ? `4px solid ${theme.palette.primary.main}`
+                                : "4px solid transparent",
+                              pl: open ? 6 : 2,
+                              py: 1,
+                              borderRadius: 2,
+                              bgcolor: subActive
+                                ? theme.palette.action.selected
+                                : "transparent",
+                              "&:hover": { bgcolor: "rgba(0,0,0,0.04)" },
+                              display: "flex",
+                              alignItems: "center",
                             }}
                           >
-                            <img
-                              src={`/logos/${sub.icon}`}
-                              alt={sub.label}
-                              style={{ width: 20, height: 20 }}
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                mr: open ? 2 : 0,
+                                justifyContent: "center",
+                                "& svg, & img": {
+                                  fontSize: open ? 20 : 18,
+                                  width: open ? 20 : 18,
+                                  height: open ? 20 : 18,
+                                },
+                              }}
+                            >
+                              <img
+                                src={`/logos/${sub.icon}`}
+                                alt={sub.label}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={t(sub.label)}
+                              primaryTypographyProps={{
+                                noWrap: true,
+                                style: {
+                                  opacity: open ? 1 : 0,
+                                  width: open ? "auto" : 0,
+                                  transition: "opacity .2s, width .2s",
+                                  letterSpacing: "0.5px",
+                                },
+                              }}
                             />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={t(sub.label)}
-                            sx={{ color: theme.palette.text.primary }}
-                          />
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
-                </Collapse>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </List>
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </List>
+      </Box>
+
+      <Divider />
 
       {/* Logout */}
-      <Box
-        sx={{
-          p: 2,
-          borderTop: `1px solid ${theme.palette.divider}`,
-        }}
-      >
+      <Box sx={{ p: 2 }}>
         <Button
           variant="outlined"
           fullWidth
@@ -248,9 +280,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onLogout }) => {
             borderColor: theme.palette.error.main,
             color: theme.palette.error.main,
             borderRadius: 2,
+            justifyContent: open ? "flex-start" : "center",
+            pl: open ? 3 : 0,
           }}
         >
-          {t("Logout")}
+          <Box
+            component="span"
+            sx={{
+              opacity: open ? 1 : 0,
+              width: open ? "auto" : 0,
+              transition: "opacity .2s, width .2s",
+            }}
+          >
+            {t("Logout")}
+          </Box>
         </Button>
       </Box>
     </Drawer>

@@ -1,45 +1,51 @@
+// src/context/socketContext.tsx
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-import { API_URL } from '../lib/config';
 import { useAuth } from './AuthContext';
-=======
-
 
 interface SocketContextValue {
   socket: Socket | null;
 }
 
-export const SocketContext = createContext<SocketContextValue>({
-  socket: null,
-});
+export const SocketContext = createContext<SocketContextValue>({ socket: null });
 
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
+    // Si no habilitamos sockets en env, salimos
+    if (process.env.NEXT_PUBLIC_ENABLE_SOCKETS !== 'true') {
+      console.info('[SocketProvider] Sockets are disabled by configuration.');
+      return;
+    }
 
-    const socketIo = io(API_URL, {
+    // URL y path desde variables de entorno
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL ?? '';
+    const socketPath = process.env.NEXT_PUBLIC_SOCKET_PATH ?? '/socket.io';
+
+    // Inicializa socket.io
+    const socketIo = io(socketUrl, {
+      path: socketPath,
+      transports: ['websocket'],
       query: { username: user?.username ?? '' },
+      reconnectionAttempts: 3,
     });
-=======
-    const socketIo = io(process.env.NEXT_PUBLIC_SOCKET_URL || '');
 
     socketIo.on('connect', () => {
-      console.log('[SocketProvider] Conectado con ID:', socketIo.id);
+      console.log('[SocketProvider] Connected, socket id:', socketIo.id);
     });
     socketIo.on('connect_error', (err) => {
-      console.error('[SocketProvider] Error de conexión:', err);
+      console.warn('[SocketProvider] Connection error:', err.message);
     });
+
     setSocket(socketIo);
+
     return () => {
       socketIo.disconnect();
-      console.log('[SocketProvider] Socket desconectado.');
+      console.log('[SocketProvider] Disconnected socket.');
     };
   }, [user]);
 
@@ -50,4 +56,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useSocket = () => useContext(SocketContext);
+export const useSocket = (): SocketContextValue => {
+  return useContext(SocketContext);
+};

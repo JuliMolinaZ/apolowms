@@ -12,20 +12,18 @@
     "items": "Items",
     "audits": "Audits"
   },
-  "sidebar": {
-    "Home": "Home",
-    "Users": "Users",
-    "Picking": "Picking",
-    "Slotting": "Slotting",
-    "Dashboards": "Dashboards",
-    "Packing": "Packing",
-    "Locations": "Locations",
-    "Arrivals": "Arrivals",
-    "Putaway": "Putaway",
-    "Items": "Items",
-    "Titan": "Titan",
-    "Chat": "Chat",
-    "Logout": "Logout",
-    "Audits": "Audits"
-  }
+  "Home": "Home",
+  "Users": "Users",
+  "Picking": "Picking",
+  "Slotting": "Slotting",
+  "Dashboards": "Dashboards",
+  "Packing": "Packing",
+  "Locations": "Locations",
+  "Arrivals": "Arrivals",
+  "Putaway": "Putaway",
+  "Items": "Items",
+  "Titan": "Titan",
+  "Chat": "Chat",
+  "Logout": "Logout",
+  "Audits": "Audits"
 }

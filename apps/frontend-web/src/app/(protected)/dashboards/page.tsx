@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import * as XLSX from "xlsx";
 import dynamic from "next/dynamic";
-import { API_URL } from "../lib/config";
+import { API_URL } from "@/lib/config";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -24,8 +24,8 @@ import {
 } from "recharts";
 
 /* ==============================================
-   1) IMPORTS MAPA (react-simple-maps) v2
-   Nota: ZoomableGroup ya no existe en la versión 2, se usará center y zoom en ComposableMap.
+   1) MAP IMPORTS (react-simple-maps) v2
+   Note: ZoomableGroup no longer exists in v2; use center and zoom on ComposableMap.
    ============================================== */
 const ComposableMap = dynamic(() =>
   import("react-simple-maps").then((mod) => mod.ComposableMap),
@@ -48,7 +48,7 @@ const Marker = dynamic(() =>
 ) as any;
 
 /* ==============================================
-   2) DATOS DE PRUEBA
+   2) TEST DATA
    ============================================== */
 
 interface KPI {
@@ -57,77 +57,77 @@ interface KPI {
 }
 
 const inboundOutboundData = [
-  { mes: "Ene", inbound: 1200, outbound: 800 },
-  { mes: "Feb", inbound: 1100, outbound: 950 },
-  { mes: "Mar", inbound: 1500, outbound: 1300 },
-  { mes: "Abr", inbound: 1800, outbound: 1200 },
-  { mes: "May", inbound: 1600, outbound: 1400 },
-  { mes: "Jun", inbound: 2000, outbound: 1700 },
-  { mes: "Jul", inbound: 2100, outbound: 1850 },
-  { mes: "Ago", inbound: 1950, outbound: 1600 },
-  { mes: "Sep", inbound: 2200, outbound: 1900 },
-  { mes: "Oct", inbound: 2400, outbound: 2000 },
-  { mes: "Nov", inbound: 2500, outbound: 2300 },
-  { mes: "Dic", inbound: 2700, outbound: 2500 },
+  { month: "Jan", inbound: 1200, outbound: 800 },
+  { month: "Feb", inbound: 1100, outbound: 950 },
+  { month: "Mar", inbound: 1500, outbound: 1300 },
+  { month: "Apr", inbound: 1800, outbound: 1200 },
+  { month: "May", inbound: 1600, outbound: 1400 },
+  { month: "Jun", inbound: 2000, outbound: 1700 },
+  { month: "Jul", inbound: 2100, outbound: 1850 },
+  { month: "Aug", inbound: 1950, outbound: 1600 },
+  { month: "Sep", inbound: 2200, outbound: 1900 },
+  { month: "Oct", inbound: 2400, outbound: 2000 },
+  { month: "Nov", inbound: 2500, outbound: 2300 },
+  { month: "Dec", inbound: 2700, outbound: 2500 },
 ];
 
 const topSKUsData = [
-  { sku: "SKU-001", ventas: 320 },
-  { sku: "SKU-002", ventas: 280 },
-  { sku: "SKU-003", ventas: 150 },
-  { sku: "SKU-004", ventas: 100 },
-  { sku: "SKU-005", ventas: 90 },
-  { sku: "SKU-006", ventas: 75 },
-  { sku: "SKU-007", ventas: 60 },
-  { sku: "SKU-008", ventas: 50 },
+  { sku: "SKU-001", sales: 320 },
+  { sku: "SKU-002", sales: 280 },
+  { sku: "SKU-003", sales: 150 },
+  { sku: "SKU-004", sales: 100 },
+  { sku: "SKU-005", sales: 90 },
+  { sku: "SKU-006", sales: 75 },
+  { sku: "SKU-007", sales: 60 },
+  { sku: "SKU-008", sales: 50 },
 ];
 
 const categoryData = [
-  { name: "Electrónicos", value: 400 },
-  { name: "Ropa", value: 300 },
-  { name: "Hogar", value: 200 },
-  { name: "Deportes", value: 150 },
-  { name: "Jardinería", value: 100 },
-  { name: "Oficina", value: 80 },
+  { name: "Electronics", value: 400 },
+  { name: "Clothing", value: 300 },
+  { name: "Home", value: 200 },
+  { name: "Sports", value: 150 },
+  { name: "Gardening", value: 100 },
+  { name: "Office", value: 80 },
 ];
 
 const pickingTimesData = [
-  { dia: "Lun", tiempo: 35 },
-  { dia: "Mar", tiempo: 40 },
-  { dia: "Mié", tiempo: 32 },
-  { dia: "Jue", tiempo: 45 },
-  { dia: "Vie", tiempo: 38 },
-  { dia: "Sáb", tiempo: 25 },
-  { dia: "Dom", tiempo: 30 },
+  { day: "Mon", time: 35 },
+  { day: "Tue", time: 40 },
+  { day: "Wed", time: 32 },
+  { day: "Thu", time: 45 },
+  { day: "Fri", time: 38 },
+  { day: "Sat", time: 25 },
+  { day: "Sun", time: 30 },
 ];
 
 const orderCompletionData = [
-  { mes: "Ene", completadas: 800, fallidas: 50 },
-  { mes: "Feb", completadas: 950, fallidas: 40 },
-  { mes: "Mar", completadas: 1200, fallidas: 60 },
-  { mes: "Abr", completadas: 1300, fallidas: 55 },
-  { mes: "May", completadas: 1500, fallidas: 70 },
-  { mes: "Jun", completadas: 1700, fallidas: 80 },
-  { mes: "Jul", completadas: 1800, fallidas: 75 },
-  { mes: "Ago", completadas: 1650, fallidas: 90 },
-  { mes: "Sep", completadas: 2000, fallidas: 100 },
-  { mes: "Oct", completadas: 2200, fallidas: 120 },
-  { mes: "Nov", completadas: 2300, fallidas: 110 },
-  { mes: "Dic", completadas: 2450, fallidas: 130 },
+  { month: "Jan", completed: 800, failed: 50 },
+  { month: "Feb", completed: 950, failed: 40 },
+  { month: "Mar", completed: 1200, failed: 60 },
+  { month: "Apr", completed: 1300, failed: 55 },
+  { month: "May", completed: 1500, failed: 70 },
+  { month: "Jun", completed: 1700, failed: 80 },
+  { month: "Jul", completed: 1800, failed: 75 },
+  { month: "Aug", completed: 1650, failed: 90 },
+  { month: "Sep", completed: 2000, failed: 100 },
+  { month: "Oct", completed: 2200, failed: 120 },
+  { month: "Nov", completed: 2300, failed: 110 },
+  { month: "Dec", completed: 2450, failed: 130 },
 ];
 
 const warehouseCapacityData = [
-  { name: "Almacén Central", used: 8000, free: 2000, total: 10000 },
-  { name: "Almacén Norte", used: 7000, free: 3000, total: 10000 },
-  { name: "Almacén Sur", used: 6500, free: 1500, total: 8000 },
-  { name: "Almacén Este", used: 3000, free: 2000, total: 5000 },
-  { name: "Almacén Oeste", used: 4000, free: 4000, total: 8000 },
-  { name: "Almacén Aux", used: 1200, free: 1800, total: 3000 },
+  { name: "Central Warehouse", used: 8000, free: 2000, total: 10000 },
+  { name: "North Warehouse", used: 7000, free: 3000, total: 10000 },
+  { name: "South Warehouse", used: 6500, free: 1500, total: 8000 },
+  { name: "East Warehouse", used: 3000, free: 2000, total: 5000 },
+  { name: "West Warehouse", used: 4000, free: 4000, total: 8000 },
+  { name: "Auxiliary Warehouse", used: 1200, free: 1800, total: 3000 },
 ];
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A461D8", "#FF6AB2"];
 
-/* MAPA: Escala alta para ver más cerca */
+/* MAP: Higher scale for closer zoom */
 interface WarehouseMarker {
   name: string;
   coordinates: [number, number];
@@ -140,30 +140,30 @@ const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const warehouseMapData: WarehouseMarker[] = [
   { name: "CDMX-WH1", coordinates: [-99.1332, 19.4326], totalStock: 80, status: "OK" },
   { name: "Monterrey-WH2", coordinates: [-100.3161, 25.6866], totalStock: 50, status: "LOW" },
-  { name: "Tokio-WH9", coordinates: [139.6503, 35.6762], totalStock: 16, status: "OK" },
+  { name: "Tokyo-WH9", coordinates: [139.6503, 35.6762], totalStock: 16, status: "OK" },
   { name: "Houston-WH3", coordinates: [-95.3698, 29.7604], totalStock: 25, status: "OK" },
-  { name: "Los Angeles-WH5", coordinates: [-118.2437, 34.0522], totalStock: 7, status: "LOW" },
-  { name: "Berlín-WH10", coordinates: [13.4050, 52.5200], totalStock: 12, status: "OK" },
-  { name: "Shanghái-WH12", coordinates: [121.4737, 31.2304], totalStock: 30, status: "OK" },
+  { name: "LosAngeles-WH5", coordinates: [-118.2437, 34.0522], totalStock: 7, status: "LOW" },
+  { name: "Berlin-WH10", coordinates: [13.4050, 52.5200], totalStock: 12, status: "OK" },
+  { name: "Shanghai-WH12", coordinates: [121.4737, 31.2304], totalStock: 30, status: "OK" },
 ];
 
 /* ==============================================
-   3) COMPONENTE PRINCIPAL
+   3) MAIN COMPONENT
    ============================================== */
 export default function DashboardsPage() {
-  // Estado para zoom y centro
+  // State for map center and zoom
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [mapZoom, setMapZoom] = useState(1);
   const [kpiData, setKpiData] = useState<KPI[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  // Al hacer clic en la lista lateral
+  // Click on side list item
   const handleListClick = (wh: WarehouseMarker) => {
     setMapCenter(wh.coordinates);
     setMapZoom(4);
   };
 
-  // Al hacer clic en un marcador
+  // Click on a marker
   const handleMarkerClick = (wh: WarehouseMarker) => {
     setMapCenter(wh.coordinates);
     setMapZoom(4);
@@ -175,10 +175,10 @@ export default function DashboardsPage() {
         const res = await fetch(`${API_URL}/dashboard/kpis`);
         const data = await res.json();
         setKpiData([
-          { label: 'Ítems Totales', value: data.items || 0 },
-          { label: 'Stock Total (unid.)', value: data.stock || 0 },
-          { label: 'Órdenes Mensuales', value: data.orders || 0 },
-          { label: 'Incidentes', value: data.incidents || 0 },
+          { label: 'Total Items', value: data.items || 0 },
+          { label: 'Total Stock (units)', value: data.stock || 0 },
+          { label: 'Monthly Orders', value: data.orders || 0 },
+          { label: 'Incidents', value: data.incidents || 0 },
         ]);
       } catch (err) {
         console.error('Error fetching KPIs', err);
@@ -198,7 +198,7 @@ export default function DashboardsPage() {
     fetchData();
   }, []);
 
-  // Exportar data a Excel
+  // Export data to Excel
   const exportChartDataToExcel = (dataArray: any[], sheetName: string) => {
     const workbook = XLSX.utils.book_new();
     const sheet = XLSX.utils.json_to_sheet(dataArray);
@@ -208,7 +208,7 @@ export default function DashboardsPage() {
 
   return (
     <DashboardContainer>
-      {/* Encabezado */}
+      {/* Header */}
       <Header>
         <TitleSection>
           <TitleImage src="/logos/dashboard.svg" alt="Dashboard Icon" />
@@ -234,14 +234,14 @@ export default function DashboardsPage() {
         </ul>
       )}
 
-      {/* GRID PRINCIPAL */}
+      {/* MAIN GRID */}
       <DashboardGrid>
         {/* AREA CHART */}
         <AreaChartWrapper>
           <ChartHeader>
-            <ChartTitle>Rendimiento Órdenes</ChartTitle>
+            <ChartTitle>Order Performance</ChartTitle>
             <DownloadButton
-              onClick={() => exportChartDataToExcel(orderCompletionData, "RendimientoOrdenes")}
+              onClick={() => exportChartDataToExcel(orderCompletionData, "OrderPerformance")}
             >
               ↓
             </DownloadButton>
@@ -250,31 +250,31 @@ export default function DashboardsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={orderCompletionData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorCompletadas" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorFallidas" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorFailed" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#ffc658" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#ffc658" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="mes" />
+                <XAxis dataKey="month" />
                 <YAxis />
                 <CartesianGrid strokeDasharray="3 3" stroke="#ccc" />
                 <Tooltip />
                 <Area
                   type="monotone"
-                  dataKey="completadas"
+                  dataKey="completed"
                   stroke="#82ca9d"
-                  fill="url(#colorCompletadas)"
+                  fill="url(#colorCompleted)"
                   animationDuration={1500}
                 />
                 <Area
                   type="monotone"
-                  dataKey="fallidas"
+                  dataKey="failed"
                   stroke="#ffc658"
-                  fill="url(#colorFallidas)"
+                  fill="url(#colorFailed)"
                   animationDuration={1500}
                 />
               </AreaChart>
@@ -285,9 +285,9 @@ export default function DashboardsPage() {
         {/* LINE CHART - Inbound vs Outbound */}
         <LineChartWrapper>
           <ChartHeader>
-            <ChartTitle>Flujo Mensual</ChartTitle>
+            <ChartTitle>Monthly Flow</ChartTitle>
             <DownloadButton
-              onClick={() => exportChartDataToExcel(inboundOutboundData, "FlujoMensual")}
+              onClick={() => exportChartDataToExcel(inboundOutboundData, "MonthlyFlow")}
             >
               ↓
             </DownloadButton>
@@ -296,7 +296,7 @@ export default function DashboardsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={inboundOutboundData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
-                <XAxis dataKey="mes" />
+                <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
@@ -305,7 +305,7 @@ export default function DashboardsPage() {
                   dataKey="inbound"
                   stroke="#8884d8"
                   strokeWidth={2}
-                  name="Entradas"
+                  name="Inbound"
                   animationDuration={1500}
                 />
                 <Line
@@ -313,7 +313,7 @@ export default function DashboardsPage() {
                   dataKey="outbound"
                   stroke="#82ca9d"
                   strokeWidth={2}
-                  name="Salidas"
+                  name="Outbound"
                   animationDuration={1500}
                 />
               </LineChart>
@@ -321,7 +321,7 @@ export default function DashboardsPage() {
           </ChartContainer>
         </LineChartWrapper>
 
-        {/* BARRAS - TOP SKUs */}
+        {/* BARS - TOP SKUs */}
         <BarChartWrapper>
           <ChartHeader>
             <ChartTitle>Top SKUs</ChartTitle>
@@ -339,18 +339,18 @@ export default function DashboardsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="ventas" fill="#82ca9d" animationDuration={1500} name="Ventas" />
+                <Bar dataKey="sales" fill="#82ca9d" animationDuration={1500} name="Sales" />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
         </BarChartWrapper>
 
-        {/* PIE CHART - Categorías */}
+        {/* PIE CHART - CATEGORIES */}
         <PieChartWrapper>
           <ChartHeader>
-            <ChartTitle>Categorías</ChartTitle>
+            <ChartTitle>Categories</ChartTitle>
             <DownloadButton
-              onClick={() => exportChartDataToExcel(categoryData, "Categorias")}
+              onClick={() => exportChartDataToExcel(categoryData, "Categories")}
             >
               ↓
             </DownloadButton>
@@ -381,13 +381,13 @@ export default function DashboardsPage() {
           </ChartContainer>
         </PieChartWrapper>
 
-        {/* STACKED BAR - Capacidad */}
+        {/* STACKED BAR - WAREHOUSE CAPACITY */}
         <CapacityBarWrapper>
           <ChartHeader>
-            <ChartTitle>Capacidad Almacenes</ChartTitle>
+            <ChartTitle>Warehouse Capacity</ChartTitle>
             <DownloadButton
               onClick={() =>
-                exportChartDataToExcel(warehouseCapacityData, "CapacidadAlmacenes")
+                exportChartDataToExcel(warehouseCapacityData, "WarehouseCapacity")
               }
             >
               ↓
@@ -406,26 +406,26 @@ export default function DashboardsPage() {
                   stackId="cap"
                   fill="#f66c7b"
                   animationDuration={1500}
-                  name="Usado"
+                  name="Used"
                 />
                 <Bar
                   dataKey="free"
                   stackId="cap"
                   fill="#82ca9d"
                   animationDuration={1500}
-                  name="Libre"
+                  name="Free"
                 />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CapacityBarWrapper>
 
-        {/* LINE CHART - Tiempo de Picking */}
+        {/* LINE CHART - PICKING TIME */}
         <PickingLineWrapper>
           <ChartHeader>
-            <ChartTitle>Tiempo Picking</ChartTitle>
+            <ChartTitle>Picking Time</ChartTitle>
             <DownloadButton
-              onClick={() => exportChartDataToExcel(pickingTimesData, "TiempoPicking")}
+              onClick={() => exportChartDataToExcel(pickingTimesData, "PickingTime")}
             >
               ↓
             </DownloadButton>
@@ -434,12 +434,12 @@ export default function DashboardsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={pickingTimesData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="5 5" stroke="#ccc" />
-                <XAxis dataKey="dia" />
+                <XAxis dataKey="day" />
                 <YAxis />
                 <Tooltip />
                 <Line
                   type="monotone"
-                  dataKey="tiempo"
+                  dataKey="time"
                   stroke="#8884d8"
                   strokeWidth={2}
                   animationDuration={1500}
@@ -449,12 +449,12 @@ export default function DashboardsPage() {
           </ChartContainer>
         </PickingLineWrapper>
 
-        {/* MAPA + DETALLE (sin ZoomableGroup, usando center y zoom en ComposableMap) */}
+        {/* MAP + DETAIL (using center and zoom on ComposableMap) */}
         <MapWrapper>
           <ChartHeader>
-            <ChartTitle>Mapa de Sucursales</ChartTitle>
+            <ChartTitle>Warehouse Locations Map</ChartTitle>
             <DownloadButton
-              onClick={() => exportChartDataToExcel(warehouseMapData, "MapaSucursales")}
+              onClick={() => exportChartDataToExcel(warehouseMapData, "WarehouseMap")}
             >
               ↓
             </DownloadButton>
@@ -513,7 +513,7 @@ export default function DashboardsPage() {
 
         <MapDetailWrapper>
           <ChartHeader>
-            <ChartTitle>Detalle del Mapa</ChartTitle>
+            <ChartTitle>Map Details</ChartTitle>
           </ChartHeader>
           <MapDetailBox>
             {warehouseMapData.map((wh) => (
@@ -536,7 +536,7 @@ export default function DashboardsPage() {
 }
 
 /* ==============================================
-   4) ESTILOS
+   4) STYLES
    ============================================== */
 
 const DashboardContainer = styled.div`

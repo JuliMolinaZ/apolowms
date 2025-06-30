@@ -1,3 +1,4 @@
+// src/components/DashboardMenuPage.tsx
 "use client";
 
 import React from "react";
@@ -5,10 +6,9 @@ import styled from "styled-components";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { sidebarItems } from "@/components/Sidebar/sidebarItems";
 
 const Container = styled.div`
-  margin-top: 60px; /* Ajusta a la altura real de tu header */
+  margin-top: 60px;
   padding: 2rem;
   min-height: calc(100vh - 60px);
   background: url("/images/burbujas.png") no-repeat top right;
@@ -17,7 +17,7 @@ const Container = styled.div`
   font-family: ${({ theme }) => theme.typography.fontFamily};
 `;
 
-const WelcomeText = styled.h2`
+const PageTitle = styled.h2`
   font-size: 24px;
   margin-bottom: 1.5rem;
   color: ${({ theme }) => theme.palette.text.primary};
@@ -26,15 +26,9 @@ const WelcomeText = styled.h2`
 
 const CardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 160px);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
   margin-top: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
-  }
 `;
 
 const Card = styled.div`
@@ -76,21 +70,16 @@ const CircleIcon = styled.img`
 `;
 
 const CardContent = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 64px;
-`;
-
-const TextContainer = styled.div`
-  text-align: center;
+  padding: 1rem;
 `;
 
 const CardTitle = styled.h3`
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: ${({ theme }) => theme.palette.text.primary};
   font-family: ${({ theme }) => theme.typography.fontFamily};
@@ -125,50 +114,72 @@ const Bar = styled.div<{ height: number }>`
   );
 `;
 
-export default function DashboardPage() {
+export interface MenuCard {
+  key: string;
+  number: number;
+  route: string;
+}
+
+export interface DashboardMenuPageProps {
+  /**
+   * Título de la página.
+   * Si no lo quieres mostrar, basta con pasar showWelcome={false}.
+   */
+  title?: string;
+  cards: MenuCard[];
+  logosMapping: Record<string, string>;
+  showWelcome?: boolean;
+}
+
+export default function DashboardMenuPage({
+  title,
+  cards,
+  logosMapping,
+  showWelcome = true,
+}: DashboardMenuPageProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
 
-  // Usamos las mismas rutas principales del sidebar
-  const cards = sidebarItems.map((item) => ({
-    key: item.label,
-    route: item.path,
-    icon: item.icon,
-    title: t(item.label),
-    number: item.count ?? 0,
-  }));
-
-  const handleCardClick = (route: string) => {
-    router.push(route);
-  };
-
   return (
     <Container>
-      <WelcomeText>
-        {t("welcome", { name: user?.username ?? "Juli" })}
-      </WelcomeText>
+      {showWelcome && (
+        <PageTitle>
+          {t("welcome", { name: user?.username ?? "Juli" })}
+        </PageTitle>
+      )}
+
+      {title && !showWelcome && <PageTitle>{title}</PageTitle>}
 
       <CardsGrid>
-        {cards.map((c) => (
-          <Card key={c.key} onClick={() => handleCardClick(c.route)}>
-            <GradientCircle>
-              <CircleIcon src={`/logos/${c.icon}`} alt={c.title} />
-            </GradientCircle>
+        {cards.map((c) => {
+          // Capitalizamos si no tienes traducción disponible
+          const label =
+            t(`cards.${c.key}`) !== `cards.${c.key}`
+              ? t(`cards.${c.key}`)
+              : c.key.charAt(0).toUpperCase() + c.key.slice(1);
 
-            <CardContent>
-              <TextContainer>
-                <CardTitle>{c.title}</CardTitle>
+          return (
+            <Card key={c.key} onClick={() => router.push(c.route)}>
+              <GradientCircle>
+                <CircleIcon
+                  src={`/logos/${logosMapping[c.key]}`}
+                  alt={label}
+                />
+              </GradientCircle>
+
+              <CardContent>
+                <CardTitle>{label}</CardTitle>
                 <CardNumber>{c.number}</CardNumber>
-              </TextContainer>
-            </CardContent>
+              </CardContent>
 
-            <BarsContainer>
-              <Bar height={50} />
-              <Bar height={25} />
-            </BarsContainer>
-          </Card>
-        ))}
+              <BarsContainer>
+                <Bar height={50} />
+                <Bar height={25} />
+              </BarsContainer>
+            </Card>
+          );
+        })}
       </CardsGrid>
     </Container>
   );
